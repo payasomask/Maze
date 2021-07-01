@@ -57,12 +57,11 @@ public class WallBuilder : MonoBehaviour{
     Wall_list.Add(tmp);
   }
 
-  void GetWall(){
-    
-  }
-
-  void poolWall(){
-
+  public void ClearWall(){
+    for(int i = 0; i < Wall_list.Count; i++){
+      Destroy(Wall_list[i]);
+    }
+    Wall_list = new List<GameObject>();
   }
 }
 

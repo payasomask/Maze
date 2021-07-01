@@ -24,11 +24,13 @@ public class MaskManager : MonoBehaviour
     public Transform t;
   }
 
-  private void Awake(){
+  public void Awake()
+  {
     _MaskManager = this;
   }
 
   public void Init(){
+    Square = AssetbundleLoader._AssetbundleLoader.InstantiateSprite("New Sprite Atlas", "white_pt");
 
   }
 
@@ -57,7 +59,7 @@ public class MaskManager : MonoBehaviour
   {
     MaskData tmp = new MaskData();
     GameObject go = new GameObject(name + "_" + blackid);
-    go.transform.SetParent(transform);
+    go.transform.SetParent(gameObject.transform);
     go.transform.localPosition = new Vector3(Position.x,Position.y,-20.0f);
     SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
     sr.sprite = Square;
@@ -76,4 +78,16 @@ public class MaskManager : MonoBehaviour
     {
         
     }
+
+  public void ClearAllMask(){
+    foreach(var v in mask_dic){
+      Destroy(v.Value.t.gameObject);
+    }
+    mask_dic = new Dictionary<int, MaskData>();
+    foreach (var v in black_dic)
+    {
+      Destroy(v.Value.t.gameObject);
+    }
+    black_dic = new Dictionary<int, MaskData>();
+  }
 }

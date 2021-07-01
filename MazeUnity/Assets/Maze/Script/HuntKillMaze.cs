@@ -314,6 +314,11 @@ public class HuntKillMaze : Maze
     }
   }
 
+  public override void ResetMaze()
+  {
+    WallBuilder._WallBuilder.ClearWall();
+  }
+
   //public Vector2 GetCellPosition(int x,int y){
   //  return maze_cell_matrix[x, y].position;
   //}

@@ -258,6 +258,12 @@ public class PrimsMaze : Maze
     }   
   }
 
+  public override void ResetMaze()
+  {
+    //重製建立迷宮需要的資料格式
+    WallBuilder._WallBuilder.ClearWall();
+  }
+
   //public override Cell[,] getMazeCell()
   //{
   //  return maze_cell_matrix;

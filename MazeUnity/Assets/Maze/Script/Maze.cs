@@ -172,6 +172,8 @@ public abstract class Maze {
 
     }
   }
+
+  public abstract void ResetMaze();
 }
 
 public class Cell

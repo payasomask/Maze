@@ -4,20 +4,17 @@ using UnityEngine;
 
 public class MazeManager : MonoBehaviour
 {
+  public MazeManager(int rows,int columns) {
+    max_columns = columns;
+    max_rows = rows;
+  }
   public static MazeManager _MazeManager = null;
   //這邊盡量是維持在768/1024的比例
   //columns : row -> 3 : 4的
-  [SerializeField]
   private int max_columns = 4;
-  [SerializeField]
   private int max_rows = 4;
   [HideInInspector]
   public float cell_size = 1;
-
-  [SerializeField]
-  private GameObject player;
-  [SerializeField]
-  private GameObject goal;
 
   private Maze mMazeSpawn = null;
   private MazePlayerController playercontroller = null;
@@ -25,42 +22,48 @@ public class MazeManager : MonoBehaviour
 
   private void Awake()
   {
-    _MazeManager = this;
+    
   }
 
   // Start is called before the first frame update
   void Start(){
-    init();
     }
 
-  void init(){
+  private void Update()
+  {
+    if (Input.GetKeyUp(KeyCode.R)){
+      resetMaze();
+    }
+  }
+
+  public void init(){
 
     getCellSize();
 
-    mMazeSpawn = new PrimsMaze(max_rows, max_columns, cell_size);
+    if(mMazeSpawn == null)
+      mMazeSpawn = new PrimsMaze(max_rows, max_columns, cell_size);
+
     mMazeSpawn.BuildMaze();
 
-    //隨機開始點
-    int startx = UtilityHelper.Random(0, max_rows);
-    int starty = UtilityHelper.Random(0, max_columns);
-    Vector2 StartPoint = mMazeSpawn.GetCellPosition(startx, starty);
-    mMazeSpawn.GetCell(startx, starty).Type = CellType.Start;
+    UtilityHelper.MazeCorner StartLocation = (UtilityHelper.MazeCorner)UtilityHelper.Random(0, (int)UtilityHelper.MazeCorner.SZ);
+    Vector2 PlayerStartLocation = UtilityHelper.GetMazeCorner(StartLocation, max_rows, max_columns);
+    Vector2 StartPoint = mMazeSpawn.GetCellPosition((int)PlayerStartLocation.x, (int)PlayerStartLocation.y);
+    mMazeSpawn.GetCell((int)PlayerStartLocation.x, (int)PlayerStartLocation.y).Type = CellType.Start;
 
-    playercontroller = Instantiate(player, StartPoint, Quaternion.identity).GetComponent<MazePlayerController>();
-    playercontroller.init(startx, starty, cell_size);
+    playercontroller = Instantiate(AssetbundleLoader._AssetbundleLoader.InstantiatePrefab("MazePlayer"), StartPoint, Quaternion.identity).GetComponent<MazePlayerController>();
+    playercontroller.init((int)PlayerStartLocation.x, (int)PlayerStartLocation.y, cell_size);
 
     //float mask_size = 3.0f;
     //CanvasMaskManager._MazeMaskManager.init(max_columns * cell_size, max_rows * cell_size, cell_size * mask_size);
     //CanvasMaskManager._MazeMaskManager.updateMaskPosion(StartPoint);
 
     //隨機結束點
-    startx = UtilityHelper.Random(0, max_rows);
-    starty = UtilityHelper.Random(0, max_columns);
-    StartPoint = mMazeSpawn.GetCellPosition(startx, starty);
-    mMazeSpawn.GetCell(startx, starty).Type = CellType.Goal;
+    Vector2 GoalStartLoaction = UtilityHelper.GetDiagonalLocation((int)PlayerStartLocation.x, (int)PlayerStartLocation.y, max_rows, max_columns);
+    Vector2 GoalPoint = mMazeSpawn.GetCellPosition((int)GoalStartLoaction.x, (int)GoalStartLoaction.y);
+    mMazeSpawn.GetCell((int)GoalStartLoaction.x, (int)GoalStartLoaction.y).Type = CellType.Goal;
 
-    goalcontroller = Instantiate(goal, StartPoint, Quaternion.identity).GetComponent<MazeGoalController>();
-    goalcontroller.init(startx, starty, cell_size);
+    goalcontroller = Instantiate(AssetbundleLoader._AssetbundleLoader.InstantiatePrefab("MazeGoal"), GoalPoint, Quaternion.identity).GetComponent<MazeGoalController>();
+    goalcontroller.init((int)GoalStartLoaction.x, (int)GoalStartLoaction.y, cell_size);
 
     MaskManager._MaskManager.AddBlack("black",Vector2.zero, new Vector2(max_columns * cell_size, max_rows * cell_size));
   }
@@ -70,11 +73,27 @@ public class MazeManager : MonoBehaviour
     cell_size = 768.0f / max_columns;
     Debug.Log("寬 : " + cell_size * max_columns);
     Debug.Log("高 : " + cell_size * max_rows);
+    Debug.Log("cell_size : " + cell_size);
+
   }
 
 
   public Maze GetMaze(){
     return mMazeSpawn;
   }
+
+  public void resetMaze(){
+
+    if (mMazeSpawn == null)
+      return;
+
+    GameObject.Destroy(playercontroller.gameObject);
+    Destroy(goalcontroller.gameObject);
+    mMazeSpawn.ResetMaze();
+    TorchManager._TorchManager.ClearAllTorch();
+    MaskManager._MaskManager.ClearAllMask();
+    init();
+  }
+
     
 }
