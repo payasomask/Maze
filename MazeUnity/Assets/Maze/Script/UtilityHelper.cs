@@ -53,6 +53,30 @@ public static class UtilityHelper
      return new Vector2(0, 0);
   }
 
+  //輸入一個角落返回除了對角線角落的其他兩個角落
+  //如果輸入是SZ，那會返回接近中心點的座標
+  public static MazeCorner[] GetMazeCorners(MazeCorner exclusivecornerlocation, int rows, int columns)
+  {
+    if (exclusivecornerlocation == MazeCorner.LeftBottom)
+    {
+      return new MazeCorner[]{ MazeCorner.LeftTop,MazeCorner.RightBottom };
+    }
+    else if (exclusivecornerlocation == MazeCorner.LeftTop)
+    {
+      return new MazeCorner[] { MazeCorner.RightTop, MazeCorner.LeftBottom};
+    }
+    else if (exclusivecornerlocation == MazeCorner.RightBottom)
+    {
+      return new MazeCorner[] { MazeCorner.RightTop, MazeCorner.LeftBottom};
+
+    }
+    else if (exclusivecornerlocation == MazeCorner.RightTop)
+    {
+      return new MazeCorner[] { MazeCorner.RightBottom, MazeCorner.LeftTop};
+    }
+    return null;
+  }
+
   public static float toFloat(object val){
     float ret = 0;
     if (val.GetType() == typeof(double))

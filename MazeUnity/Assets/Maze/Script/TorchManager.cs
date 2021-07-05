@@ -6,9 +6,6 @@ public class TorchManager : MonoBehaviour
 {
   public static TorchManager _TorchManager = null;
 
-  [SerializeField]
-  private GameObject TorchObj = null;
-
   int torchid = 0;
   class Torch{
     public GameObject gameobj = null;
@@ -28,7 +25,7 @@ public class TorchManager : MonoBehaviour
   public void PlaceTorch(Vector2 position, float scale){
 
     Torch tmpT = new Torch();
-    GameObject tmp = Instantiate(TorchObj, transform);
+    GameObject tmp = instantiateObject(gameObject, "Torch");
     tmp.transform.localPosition = position;
     tmp.transform.localScale = new Vector3(scale, scale, 1.0f);
     tmp.transform.Find("mask").localScale = new Vector3(basic_Light_Radius, basic_Light_Radius, 1.0f);
@@ -46,5 +43,11 @@ public class TorchManager : MonoBehaviour
     torch_dic = new Dictionary<int, Torch>();
   }
 
+  GameObject instantiateObject(GameObject parent, string name)
+  {
+    GameObject g = AssetbundleLoader._AssetbundleLoader.InstantiatePrefab(name);
+    g.transform.SetParent(parent.transform, true);
 
+    return g;
+  }
 }

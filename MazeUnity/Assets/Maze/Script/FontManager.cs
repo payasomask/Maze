@@ -28,9 +28,10 @@ public class FontManager : MonoBehaviour
 
   public void init(){
 
-    string Lang = PlayerPrefsManager._PlayerPrefsManager.Language;
+    //string Lang = PlayerPrefsManager._PlayerPrefsManager.Language;
+    string Lang = "LiberationSans SDF";
 
-    foreach(var v in Font_list){
+    foreach (var v in Font_list){
       if (v.name == Lang)
         current_font = v;
     }

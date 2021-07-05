@@ -36,6 +36,13 @@ public class Timer : MonoBehaviour {
     }
   }
 
+  public float getSessionTime(string id){
+    if (session_map.ContainsKey(id) == false)
+      return 0.0f;
+
+    return session_map[id].count_down_duration;
+  }
+
   public void stop_all(){
     session_map.Clear();
   }
@@ -65,6 +72,7 @@ public class Timer : MonoBehaviour {
       if (entity.Value.count_down_duration>0f){
         entity.Value.count_down_duration-=Time.deltaTime;
         if (entity.Value.count_down_duration<=0f){
+          entity.Value.count_down_duration = 0.0f;
           Debug.Log("27 - count down times up ! (session:"+entity.Value.session_id+")");
           if (entity.Value.count_down_handler !=null){
             try{

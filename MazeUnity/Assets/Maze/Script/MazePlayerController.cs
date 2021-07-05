@@ -7,6 +7,8 @@ public class MazePlayerController : MonoBehaviour
   [SerializeField]
   private float basic_speed = 10.0f;
   private float maze_size;
+  //玩家火光範圍
+  float maskscale = 3.0f;
 
   private int currentx, currenty;
   private List<Cell> movepath = null;
@@ -28,27 +30,6 @@ public class MazePlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-    if (Input.GetKeyUp(KeyCode.UpArrow)){
-      moveDir(Dir.Top);
-    }
-    if (Input.GetKeyUp(KeyCode.DownArrow)){
-      moveDir(Dir.Bottom);
-    }
-    if (Input.GetKeyUp(KeyCode.LeftArrow))
-    {
-      moveDir(Dir.Left);
-    }
-    if (Input.GetKeyUp(KeyCode.RightArrow))
-    {
-      moveDir(Dir.Right);
-    }
-
-    if (Input.GetKeyUp(KeyCode.Space)){
-      if (mcurrentState == MoveState.Moving)
-        return;
-      Vector2 postion =MazeManager._MazeManager.GetMaze().GetCellPosition(currentx, currenty);
-      PlayerItemManager._PlayerItemManager.UseTorch(postion);
-    }
 
     move();
     updateTrackLine();
@@ -61,19 +42,36 @@ public class MazePlayerController : MonoBehaviour
     this.currenty = currenty;
 
     //感覺3倍的maze_size比較舒服
-    float scale = 3.0f;
-    gameObject.transform.localScale = new Vector3(scale * maze_size, scale * maze_size, 1.0f);
+
+    //gameObject.transform.localScale = new Vector3(maze_size, maze_size, 1.0f);
+    GameObject icon_go = transform.Find("Icon").gameObject;
+    Sprite icon = icon_go.GetComponent<SpriteRenderer>().sprite;
+    if (icon != null){
+      float iconscale = maze_size / icon.bounds.size.x;//根據圖資重新計算scale大小
+      icon_go.transform.localScale = new Vector3(iconscale, iconscale, 0.0f);
+    }
 
     LineRenderer = gameObject.GetComponent<LineRenderer>();
+    LineRenderer.startWidth = maze_size * 0.1f;
+    LineRenderer.endWidth = maze_size * 0.1f;
 
     Cell StartCell = MazeManager._MazeManager.GetMaze().GetCell(currentx, currenty);
     StartCell.PlayerVisitedState = CellState.Visited;
     trackpath.Add(StartCell);
 
-    maskid = MaskManager._MaskManager.AddMask(transform, "player", scale,true);
+    maskid = MaskManager._MaskManager.AddMask(transform, "player", maskscale * maze_size, true);
   }
 
-  void moveDir(Dir dir){
+  public Vector2 position(){
+    return  MazeManager._MazeManager.GetMaze().GetCellPosition(currentx, currenty);
+  }
+
+
+  public bool IsMoving(){
+    return mcurrentState == MoveState.Moving;
+  }
+
+  public void moveDir(Dir dir){
     if (mcurrentState == MoveState.Moving)
       return;
 
@@ -102,6 +100,10 @@ public class MazePlayerController : MonoBehaviour
     mcurrentState = MoveState.Moving;
   }
 
+  public float maskScale(){
+    return maskscale;
+  }
+
   void move(){
     if (mcurrentState == MoveState.Arrival)
       return;
@@ -123,7 +125,9 @@ public class MazePlayerController : MonoBehaviour
       currentx = movepath[0].X;
       currenty = movepath[0].Y;
 
-      if(mcurrentType == MoveType.New)
+      MazeManager._MazeManager.ArrivalCell("player", TargetCell);
+
+      if (mcurrentType == MoveType.New)
       AddTrackPath(TargetCell);
       else{
         if (movepath.Count == 1){
@@ -141,7 +145,7 @@ public class MazePlayerController : MonoBehaviour
 
     gameObject.transform.position += (Vector3)(dir * dis);
 
-    CanvasMaskManager._MazeMaskManager.updateMaskPosion(gameObject.transform.position);
+    //CanvasMaskManager._MazeMaskManager.updateMaskPosion(gameObject.transform.position);
   }
 
   void AddTrackPath(Cell targetCell){
@@ -173,15 +177,16 @@ public class MazePlayerController : MonoBehaviour
       return;
 
     LineRenderer.positionCount = trackpath.Count +1;
+    float linedepth = 1.0f;
 
     if (trackpath.Count > 0){
       Vector3[] trackpositions = new Vector3[trackpath.Count+1];
       int index = 0;
       foreach (var v in trackpath){
-        trackpositions[index] = v.position;
+        trackpositions[index] = new Vector3(v.position.x, v.position.y, linedepth);
         index++;
       }
-      trackpositions[trackpath.Count] = gameObject.transform.position;
+      trackpositions[trackpath.Count] = new Vector3(gameObject.transform.position.x, gameObject.transform.position.y, linedepth);
       LineRenderer.SetPositions(trackpositions);
     }
   }

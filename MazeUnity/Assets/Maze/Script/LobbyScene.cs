@@ -76,6 +76,7 @@ public class LobbyScene : MonoBehaviour,IScene
     if(type == UIEventType.BUTTON){
       if(name == "Play_bt"){
         Debug.Log("Play_bt");
+        pDisposeHandler(SceneDisposeReason.USER_ACTION, new object[] { 0 });
       }
     }
   }

@@ -88,9 +88,13 @@ public class UIDialog : MonoBehaviour{
 
   AssetbundleLoader mABL =null;
 
+  private void Awake()
+  {
+    _UIDialog = this;
+  }
+
   // Use this for initialization
   void Start () {
-    _UIDialog = this;
   }
   
   // Update is called once per frame

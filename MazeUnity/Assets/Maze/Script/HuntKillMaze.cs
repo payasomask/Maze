@@ -5,12 +5,12 @@ using System;
 
 public class HuntKillMaze : Maze
 {
-  public HuntKillMaze(int max_row, int max_column, int grid_size)
+  public HuntKillMaze(int max_row, int max_column, int grid_size, Vector3 maze_pivot)
   {
     this.max_columns = max_column;
     this.max_rows = max_row;
     this.grid_size = grid_size;
-    maze_pivot = UtilityHelper.MazePoint(max_columns * grid_size, max_rows* grid_size);
+    this.maze_pivot = maze_pivot;
     //Debug.Log("Maze Point : " + maze_pivot);
   }
 

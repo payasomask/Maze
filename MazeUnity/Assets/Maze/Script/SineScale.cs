@@ -21,4 +21,9 @@ public class SineScale : MonoBehaviour
 
       //Debug.Log("sin : " + sin);
     }
+
+  public void setScale(float scale){
+    start = scale;
+    power = start * 0.1f;
+  }
 }

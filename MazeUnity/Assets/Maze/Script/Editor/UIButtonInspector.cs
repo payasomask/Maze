@@ -20,7 +20,6 @@ public class UIButtonInspector : Editor {
   SerializedProperty longPressDuration =null;
 
   SerializedProperty CurrentAction = null;
-  SerializedProperty animator_triggername = null;
 
   SerializedProperty btn_enabled =null;
 

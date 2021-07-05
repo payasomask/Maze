@@ -327,7 +327,7 @@ public class PlayerPrefsManager
 public class MainLogic : MonoBehaviour {
 
   public static MainLogic _MainLogic = null;
-
+  private GameObject camera_go = null;
   public IScene mS = null;
   class SceneTransition
   {
@@ -529,7 +529,7 @@ public class MainLogic : MonoBehaviour {
 
     FontManager._FontManager.init();
 
-   instantiateObject(dynamicObj, "Common_Camera");
+    camera_go = instantiateObject(dynamicObj, "Common_Camera");
 
    GameObject extendBGCamera =new GameObject();
     extendBGCamera.transform.SetParent(dynamicObj.transform);
@@ -586,16 +586,19 @@ public class MainLogic : MonoBehaviour {
       sr2.sprite = AssetbundleLoader._AssetbundleLoader.InstantiateSprite("embedded2", "ext_bg_v");
     }
 
-    //MaskManager._MaskManager.Init();
-    //MazeManager._MazeManager = new MazeManager(26,24);
-    //MazeManager._MazeManager.init();
+
 
 
     //
     //Create First Scene
     //
     Debug.Log("transit to first scene...");
-    mCurrentSceneTransition = new SceneTransition("IntroScene", new object[] { }, delegate () {
+    //mCurrentSceneTransition = new SceneTransition("IntroScene", new object[] { }, delegate ()
+    //{
+    //  mCurrentSceneTransition = null;
+    //});
+    mCurrentSceneTransition = new SceneTransition("MazeScene", new object[] { }, delegate ()
+    {
       mCurrentSceneTransition = null;
     });
 
@@ -681,27 +684,10 @@ public class MainLogic : MonoBehaviour {
       if (sdr == SceneDisposeReason.USER_ACTION)
       {
         int type = (int)extra_info[0];
-        if (type == 0)
-        {
-        }
-        else
-        if (type == 1)
-        { //cardbook
-
-        }
-        else
-        if (type == 2)
-        { //cardgame ，extra_info[5] 卡戰相關資料(勝負、助戰者等等...)
-        }
-        else
-        if (type == 3)
-        { //store
-
-        }
-        else
-        if (type == 4)
-        { //slotgame shortcut
-
+        if (type == 0){
+          mCurrentSceneTransition = new SceneTransition("MazeScene", new object[] { }, delegate () {
+            mCurrentSceneTransition = null;
+          }, true);
         }
       }
       else
@@ -715,6 +701,23 @@ public class MainLogic : MonoBehaviour {
             unityActivity.Call<bool>("moveTaskToBack", true);
         }
 #endif
+      }
+    }
+    else
+    if (mS.getSceneName() == "MazeScene")
+    {
+      if (sdr == SceneDisposeReason.USER_ACTION)
+      {
+        //int type = (int)extra_info[0];
+        //if (type == 0){
+
+        //}
+      }
+      else
+      if (sdr == SceneDisposeReason.USER_EXIT){
+        mCurrentSceneTransition = new SceneTransition("LobbyScene", new object[] { }, delegate () {
+          mCurrentSceneTransition = null;
+        }, true);
       }
     }
   }
@@ -778,5 +781,18 @@ public class MainLogic : MonoBehaviour {
 
   string stage_id_to_stage_no(string stage_id){
     return int.Parse(stage_id.Substring(stage_id.Length-2, 2)).ToString();
+  }
+
+  public float getCameraWidth(){
+    if (camera_go == null)
+      return 0.0f;
+    return camera_go.GetComponent<ConfigCamera>().desiredWidth;
+  }
+
+  public float getCameraHight()
+  {
+    if (camera_go == null)
+      return 0.0f;
+    return camera_go.GetComponent<ConfigCamera>().desiredHeight;
   }
 }

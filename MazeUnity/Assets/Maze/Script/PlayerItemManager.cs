@@ -16,7 +16,17 @@ public class PlayerItemManager : MonoBehaviour
     }
 
   public void UseTorch(Vector2 position){
-    float scale = MazeManager._MazeManager.cell_size;
+    float scale = MazeManager._MazeManager.getCellSize();
     TorchManager._TorchManager.PlaceTorch(position, scale);
+  }
+
+  public void UseOilLamp(float oillampmaskscale){
+    float currentscale = MazeManager._MazeManager.PlayerMaskScale();
+    MaskManager._MaskManager.SetMaskScale("player", currentscale * oillampmaskscale);
+  }
+  public void UseStaff()
+  {
+    MaskManager._MaskManager.HideBlack("black");
+
   }
 }

@@ -5,12 +5,12 @@ using System;
 
 public class PrimsMaze : Maze
 {
-  public PrimsMaze(int max_row, int max_column, float grid_size)
+  public PrimsMaze(int max_row, int max_column, float grid_size, Vector3 maze_pivot)
   {
     this.max_columns = max_column;
     this.max_rows = max_row;
     this.grid_size = grid_size;
-    maze_pivot = UtilityHelper.MazePoint(max_columns * grid_size, max_rows * grid_size);
+    this.maze_pivot = maze_pivot;
     //Debug.Log("Maze Point : " + maze_pivot);
   }
 

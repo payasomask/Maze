@@ -11,11 +11,14 @@ public class SpriteManager : MonoBehaviour
   private SpriteAtlas[] Texture_list = null;
 
   Dictionary<string, Sprite> mSpriteCache = new Dictionary<string, Sprite>();
-
+  private void Awake()
+  {
+    _SpriteManager = this;
+  }
   // Start is called before the first frame update
   void Start()
   {
-    _SpriteManager = this;
+    
   }
 
   // Update is called once per frame
@@ -38,7 +41,7 @@ public class SpriteManager : MonoBehaviour
     }
 
     if (targetTex == null){
-      Debug.Log("864 - cant find Texture2D.name = " + texname);
+      //Debug.Log("864 - cant find Texture2D.name = " + texname);
       return null;
     }
 

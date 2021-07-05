@@ -5,8 +5,6 @@ using UnityEngine;
 public class WallBuilder : MonoBehaviour{
 
   public static WallBuilder _WallBuilder = null;
-  [SerializeField]
-  private GameObject WallObj = null; 
   private List<GameObject> Wall_list = new List<GameObject>();
   private float wallwidth = 2.0f;
 
@@ -48,7 +46,7 @@ public class WallBuilder : MonoBehaviour{
   }
 
   void CreateWall(Vector3 Start,Vector3 End){
-    GameObject tmp = Instantiate(WallObj, transform);
+    GameObject tmp = instantiateObject(gameObject, "Wall");
     LineRenderer lr = tmp.GetComponent<LineRenderer>();
     lr.SetPosition(0, Start);
     lr.SetPosition(1, End);
@@ -62,6 +60,13 @@ public class WallBuilder : MonoBehaviour{
       Destroy(Wall_list[i]);
     }
     Wall_list = new List<GameObject>();
+  }
+
+  GameObject instantiateObject(GameObject parent, string name){
+    GameObject g = AssetbundleLoader._AssetbundleLoader.InstantiatePrefab(name);
+    g.transform.SetParent(parent.transform, true);
+
+    return g;
   }
 }
 

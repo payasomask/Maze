@@ -35,7 +35,13 @@ public class EmbeddedSceneSettings : ISceneSettings{
       null
     }},
 
-   
+        {"MazeScene", new object[]{
+      typeof(MazeScene),
+      null,
+      null
+    }},
+
+
   };
 
   public object getSettings(string gameName, SceneSettingsType type){

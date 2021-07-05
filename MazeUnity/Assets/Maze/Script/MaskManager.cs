@@ -7,9 +7,7 @@ public class MaskManager : MonoBehaviour
 
   public static MaskManager _MaskManager = null;
 
-  [SerializeField]
   private Sprite Circle;
-  [SerializeField]
   private Sprite Square;
 
   int maskid = 0;
@@ -30,8 +28,66 @@ public class MaskManager : MonoBehaviour
   }
 
   public void Init(){
-    Square = AssetbundleLoader._AssetbundleLoader.InstantiateSprite("New Sprite Atlas", "white_pt");
+    Square = AssetbundleLoader._AssetbundleLoader.InstantiateSprite("common", "white_pt");
+    Circle = AssetbundleLoader._AssetbundleLoader.InstantiateSprite("common", "8x8");
+  }
 
+  //顯示在迷宮裡
+  public void ShowMask(string name){
+    foreach(var v in mask_dic){
+      if(v.Value.name == name){
+        v.Value.t.GetComponent<SpriteMask>().enabled = true;
+      }
+    }
+  }
+
+  //隱藏在迷宮裡
+  public void HideMask(string name){
+    foreach (var v in mask_dic)
+    {
+      if (v.Value.name == name)
+      {
+        v.Value.t.GetComponent<SpriteMask>().enabled = false;
+      }
+    }
+  }
+
+  //顯示黑暗
+  public void ShowBlack(string name)
+  {
+    foreach (var v in black_dic)
+    {
+      if (v.Value.name == name)
+      {
+        v.Value.t.GetComponent<SpriteRenderer>().enabled = true;
+      }
+    }
+  }
+
+  //關閉黑暗
+  public void HideBlack(string name)
+  {
+    foreach (var v in black_dic)
+    {
+      if (v.Value.name == name)
+      {
+        v.Value.t.GetComponent<SpriteRenderer>().enabled = false;
+      }
+    }
+  }
+
+  public void SetMaskScale(string name, float scale){
+    foreach (var v in mask_dic)
+    {
+      if (v.Value.name == name)
+      {
+        v.Value.t.localScale = new Vector3(scale, scale, 1.0f);
+        SineScale ss = v.Value.t.GetComponent<SineScale>();
+        if(ss != null){
+          ss.setScale(scale);
+        }
+      }
+    }
   }
 
   public int AddMask(Transform parent ,string name,float scale, bool sinScale = false){
@@ -39,11 +95,12 @@ public class MaskManager : MonoBehaviour
     MaskData tmp = new MaskData();
     GameObject go = new GameObject(name + "_" + tmpid);
     SpriteMask sr = go.AddComponent<SpriteMask>();
+    float spirtescale = Circle.bounds.size.x;//根據原圖大小還原比例
     sr.sprite = Circle;
     go.transform.SetParent(parent);
     go.transform.localPosition = Vector3.zero;
     tmp.t = go.transform;
-    tmp.t.localScale = new Vector3(scale, scale, 1.0f);
+    tmp.t.localScale = new Vector3(scale/ spirtescale, scale/ spirtescale, 1.0f);
     tmp.id = tmpid;
     tmp.name = name;
 
@@ -55,12 +112,15 @@ public class MaskManager : MonoBehaviour
     return tmpid;
   }
 
+ 
+
   public void AddBlack(string name, Vector2 Position, Vector2 scale)
   {
     MaskData tmp = new MaskData();
     GameObject go = new GameObject(name + "_" + blackid);
     go.transform.SetParent(gameObject.transform);
-    go.transform.localPosition = new Vector3(Position.x,Position.y,-20.0f);
+    float depth = -5;
+    go.transform.localPosition = new Vector3(Position.x,Position.y, depth);
     SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
     sr.sprite = Square;
     sr.color = Color.black;
@@ -81,12 +141,14 @@ public class MaskManager : MonoBehaviour
 
   public void ClearAllMask(){
     foreach(var v in mask_dic){
+      if(v.Value.t !=null)
       Destroy(v.Value.t.gameObject);
     }
     mask_dic = new Dictionary<int, MaskData>();
     foreach (var v in black_dic)
     {
-      Destroy(v.Value.t.gameObject);
+      if (v.Value.t != null)
+        Destroy(v.Value.t.gameObject);
     }
     black_dic = new Dictionary<int, MaskData>();
   }
