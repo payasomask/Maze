@@ -97,7 +97,7 @@ public class UIButton : MonoBehaviour, ITouchEventReceiver {
         normalState = sr.sprite;
         
       if(disabledState == null) {
-        Debug.Log("59 - load disabled state sprite with atlas =" + disabledState_atlasName + ", sprite =" + disabledState_spriteName);
+        //Debug.Log("59 - load disabled state sprite with atlas =" + disabledState_atlasName + ", sprite =" + disabledState_spriteName);
         AssetbundleLoader ab = AssetbundleLoader._AssetbundleLoader;
         if(ab == null) {
           Debug.Log("62 - assetbundle not ready");
@@ -109,7 +109,7 @@ public class UIButton : MonoBehaviour, ITouchEventReceiver {
       if(disabledState != null) {
         sr.sprite = disabledState;
       } else {
-        Debug.Log("disabledState is null");
+        //Debug.Log("disabledState is null");
       }
 
     }
@@ -200,7 +200,7 @@ public class UIButton : MonoBehaviour, ITouchEventReceiver {
       normalState =sr.sprite;
 
     if (hoverState==null){
-      Debug.Log("35 - load hover state sprite with atlas ="+hoverState_atlasName+", sprite ="+hoverState_spriteName);
+      //Debug.Log("35 - load hover state sprite with atlas ="+hoverState_atlasName+", sprite ="+hoverState_spriteName);
       AssetbundleLoader ab = AssetbundleLoader._AssetbundleLoader;
       if (ab==null){
         Debug.Log("74 - assetbundle not ready");
@@ -218,7 +218,7 @@ public class UIButton : MonoBehaviour, ITouchEventReceiver {
       }
       sr.sprite =hoverState;
     }else{
-      Debug.Log("hoverState is null");
+      //Debug.Log("hoverState is null");
     }
 
     if (string_sr !=null && button_label_str!=null && button_label_str[1] !=null){

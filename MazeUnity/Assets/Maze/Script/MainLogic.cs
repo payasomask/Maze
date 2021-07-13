@@ -69,23 +69,92 @@ public class PlayerPrefsManager
       savePlayerPrefsString(_AdministationVersionKey, value);
     }
   }
+  int _PlayMazeTimes;
+  public int PlayMazeTimes
+  {
+    get { return _PlayMazeTimes; }
+    set
+    {
+      _PlayMazeTimes = value;
+      savePlayerPrefsInt("PlayerMazeTimes", value);
+    }
+  }
+
+  int _DarkMazeLevel;
+  public int DarkMazeLevel
+  {
+    get { return _DarkMazeLevel; }
+    set
+    {
+      _DarkMazeLevel = value;
+      savePlayerPrefsInt("DarkMazeLevel", value);
+    }
+  }
+
+  int _LightMazeLevel;
+  public int LightMazeLevel
+  {
+    get { return _LightMazeLevel; }
+    set
+    {
+      _LightMazeLevel = value;
+      savePlayerPrefsInt("LightMazeLevel", value);
+    }
+  }
+
+  int _TorchNum;
+  public int TorchNum
+  {
+    get { return _TorchNum; }
+    set
+    {
+      _TorchNum = value;
+      savePlayerPrefsInt("TorchNum", value);
+    }
+  }
+
+  int _OilLmapNum;
+  public int OilLampNum
+  {
+    get { return _OilLmapNum; }
+    set
+    {
+      _OilLmapNum = value;
+      savePlayerPrefsInt("OilLmapNum", value);
+    }
+  }
 
   public PlayerPrefsManager()
   {
     _Audio_T = PlayerPrefs.GetString(audioKey, "on");
     _Music_T = PlayerPrefs.GetString(musicKey, "on");
     _Vibrate_T = PlayerPrefs.GetString(vibrateKey, "on");
-
     _Language = PlayerPrefs.GetString(LanguageKey, "US");
-
-
     _AdministationVersion = PlayerPrefs.GetString(_AdministationVersionKey, "");
- 
+
+    _PlayMazeTimes = PlayerPrefs.GetInt("PlayerMazeTimes", 0);
+    _DarkMazeLevel = PlayerPrefs.GetInt("DarkMazeLevel", 1);
+    _LightMazeLevel = PlayerPrefs.GetInt("LightMazeLevel", 1);
+    _TorchNum = PlayerPrefs.GetInt("TorchNum", 3);
+    _OilLmapNum = PlayerPrefs.GetInt("OilLmapNum", 3);
+  }
+
+  public void GetRewrd(ItmeType type,int Num){
+    if (type == ItmeType.Torch){
+      TorchNum += Num;
+      Debug.Log("454 - GetReward : " + type + "，Earned : " + Num + "，current :" + TorchNum);
+    }
+    else if(type == ItmeType.OilLamp){
+      OilLampNum += Num;
+      Debug.Log("454 - GetReward : " + type + "，Earned : " + Num + "，current :" + OilLampNum);
+    }
+  }
+
+  public bool IsPlayTimesODD(){
+    return PlayMazeTimes % 2 != 0;
   }
 
   public void resetplayerprefs(){
-    PlayerPrefs.DeleteKey("DAILYGAME");
-    PlayerPrefs.DeleteKey("DAILYVIP");
     _PlayerPrefsManager = new PlayerPrefsManager();
   }
 
@@ -324,7 +393,8 @@ public class PlayerPrefsManager
 
 }
 
-public class MainLogic : MonoBehaviour {
+public class MainLogic : MonoBehaviour
+{
 
   public static MainLogic _MainLogic = null;
   private GameObject camera_go = null;
@@ -491,7 +561,8 @@ public class MainLogic : MonoBehaviour {
   public ISceneSettings mER = null;
 
   // Use this for initialization
-  void Start () {
+  void Start()
+  {
 
     //
     // SETUP UNITY ENGINE PARAMETERS
@@ -515,12 +586,12 @@ public class MainLogic : MonoBehaviour {
     tmpDLG.setupAssetbundleLoader(AssetbundleLoader._AssetbundleLoader);
 
     //AUDIO
-    GameObject audio_obj =new GameObject();
-    audio_obj.name ="Audio";
+    GameObject audio_obj = new GameObject();
+    audio_obj.name = "Audio";
     AudioController mAC = audio_obj.AddComponent<AudioController>();
     mAC.init();
 
-    GameObject dynamicObj =new GameObject();
+    GameObject dynamicObj = new GameObject();
     dynamicObj.name = "Main Cameras";
     //TouchEventHandler teh =dynamicObj.AddComponent<TouchEventHandler>(); //HANDLE EVENT FOR SLEEPING SCREEN WAKE
     //teh.update_priority(-3);//
@@ -528,61 +599,65 @@ public class MainLogic : MonoBehaviour {
     //tehbc2d.size =new Vector2(1366f, 768f);
 
     FontManager._FontManager.init();
+    JsonLoader._JsonLoader.Init();
 
     camera_go = instantiateObject(dynamicObj, "Common_Camera");
 
-   GameObject extendBGCamera =new GameObject();
+    GameObject extendBGCamera = new GameObject();
     extendBGCamera.transform.SetParent(dynamicObj.transform);
-    extendBGCamera.transform.localPosition =Vector3.forward*-2000f;
-    extendBGCamera.name ="ExtCamera";
-    Camera ec =extendBGCamera.AddComponent<Camera>();
-    ec.cullingMask =1<<31;
-    ec.orthographic =true;
-    ec.clearFlags =CameraClearFlags.SolidColor;
-    ec.backgroundColor =Color.black;
-    ec.farClipPlane =4000f;
-    ec.depth =-2;
-    ec.allowMSAA =false;
+    extendBGCamera.transform.localPosition = Vector3.forward * -2000f;
+    extendBGCamera.name = "ExtCamera";
+    Camera ec = extendBGCamera.AddComponent<Camera>();
+    ec.cullingMask = 1 << 31;
+    ec.orthographic = true;
+    ec.clearFlags = CameraClearFlags.SolidColor;
+    ec.backgroundColor = Color.black;
+    ec.farClipPlane = 4000f;
+    ec.depth = -2;
+    ec.allowMSAA = false;
 
-    if (((float)Screen.width/(float)Screen.height)<(768f / 1366)){
-      ec.orthographicSize =683f*Screen.height/Screen.width*(768f / 1366);
+    if (((float)Screen.width / (float)Screen.height) < (768f / 1366))
+    {
+      ec.orthographicSize = 683f * Screen.height / Screen.width * (768f / 1366);
 
-      GameObject ext_bgv1 =new GameObject();
+      GameObject ext_bgv1 = new GameObject();
       ext_bgv1.transform.SetParent(ec.transform, false);
-      ext_bgv1.transform.localPosition =new Vector3(0f, -683- (116F/2F), 2500f);
-      ext_bgv1.name ="ext_bg";
-      ext_bgv1.layer =31;
-      SpriteRenderer sr1 =ext_bgv1.AddComponent<SpriteRenderer>();
-      sr1.sprite =AssetbundleLoader._AssetbundleLoader.InstantiateSprite("embedded2", "ext_bg_h");
+      ext_bgv1.transform.localPosition = new Vector3(0f, -683 - (116F / 2F), 2500f);
+      ext_bgv1.name = "ext_bg";
+      ext_bgv1.layer = 31;
+      SpriteRenderer sr1 = ext_bgv1.AddComponent<SpriteRenderer>();
+      sr1.sprite = AssetbundleLoader._AssetbundleLoader.InstantiateSprite("embedded2", "ext_bg_h");
 
-      GameObject ext_bgv2 =new GameObject();
+      GameObject ext_bgv2 = new GameObject();
       ext_bgv2.transform.SetParent(ec.transform, false);
-      ext_bgv2.transform.localPosition =new Vector3(0f, 683+ (116F/2F), 2500f);
-      ext_bgv2.name ="ext_bg";
-      ext_bgv2.layer =31;
-      SpriteRenderer sr2 =ext_bgv2.AddComponent<SpriteRenderer>();
-      sr2.flipY =true;
+      ext_bgv2.transform.localPosition = new Vector3(0f, 683 + (116F / 2F), 2500f);
+      ext_bgv2.name = "ext_bg";
+      ext_bgv2.layer = 31;
+      SpriteRenderer sr2 = ext_bgv2.AddComponent<SpriteRenderer>();
+      sr2.flipY = true;
       sr2.sprite = AssetbundleLoader._AssetbundleLoader.InstantiateSprite("embedded2", "ext_bg_h");
 
 
-    }else{
-      ec.orthographicSize =683f;
+    }
+    else
+    {
+      ec.orthographicSize = 683f;
 
-      GameObject ext_bgv1 =new GameObject();
+      GameObject ext_bgv1 = new GameObject();
       ext_bgv1.transform.SetParent(ec.transform, false);
-      ext_bgv1.transform.localPosition =new Vector3(-766.5f, 0f, 2500f);
-      ext_bgv1.name ="ext_bg";
-      ext_bgv1.layer =31;
-      SpriteRenderer sr1 =ext_bgv1.AddComponent<SpriteRenderer>();
+      ext_bgv1.transform.localPosition = new Vector3(-766.5f, 0f, 2500f);
+      ext_bgv1.name = "ext_bg";
+      ext_bgv1.layer = 31;
+      SpriteRenderer sr1 = ext_bgv1.AddComponent<SpriteRenderer>();
       sr1.sprite = AssetbundleLoader._AssetbundleLoader.InstantiateSprite("embedded2", "ext_bg_v");
 
-      GameObject ext_bgv2 =new GameObject();
+      GameObject ext_bgv2 = new GameObject();
       ext_bgv2.transform.SetParent(ec.transform, false);
-      ext_bgv2.transform.localPosition =new Vector3(766.5f, 0f, 2500f);
-      ext_bgv2.name ="ext_bg";
-      ext_bgv2.layer =31;
-      SpriteRenderer sr2 =ext_bgv2.AddComponent<SpriteRenderer>();
-      sr2.flipX =true;
+      ext_bgv2.transform.localPosition = new Vector3(766.5f, 0f, 2500f);
+      ext_bgv2.name = "ext_bg";
+      ext_bgv2.layer = 31;
+      SpriteRenderer sr2 = ext_bgv2.AddComponent<SpriteRenderer>();
+      sr2.flipX = true;
       sr2.sprite = AssetbundleLoader._AssetbundleLoader.InstantiateSprite("embedded2", "ext_bg_v");
     }
 
@@ -593,25 +668,42 @@ public class MainLogic : MonoBehaviour {
     //Create First Scene
     //
     Debug.Log("transit to first scene...");
-    //mCurrentSceneTransition = new SceneTransition("IntroScene", new object[] { }, delegate ()
-    //{
-    //  mCurrentSceneTransition = null;
-    //});
-    mCurrentSceneTransition = new SceneTransition("MazeScene", new object[] { }, delegate ()
+    mCurrentSceneTransition = new SceneTransition("IntroScene", new object[] { }, delegate ()
     {
       mCurrentSceneTransition = null;
     });
+    //mCurrentSceneTransition = new SceneTransition("MazeScene", new object[] { }, delegate ()
+    //{
+    //  mCurrentSceneTransition = null;
+    //});
+    //mCurrentSceneTransition = new SceneTransition("LobbyScene", new object[] { }, delegate ()
+    //{
+    //  mCurrentSceneTransition = null;
+    //});
 
+    //#if UNITY_ANDROID && !UNITY_EDITOR
+    //          if (android_utility_class ==null)
+    //            android_utility_class =(new AndroidJavaClass("com.powergameranger.androidnative.ADSHelper"));
+
+    //          if (android_utility_class !=null)
+    //            android_utility_class.CallStatic("Log","test call native");
+
+    //#endif
+
+    AdsHelper._AdsHelper.init();
+    //AdsHelper._AdsHelper.RequestInterstitialAds();
   }
 
-  GameObject instantiateObject(GameObject parent, string name){
+  GameObject instantiateObject(GameObject parent, string name)
+  {
     GameObject g = AssetbundleLoader._AssetbundleLoader.InstantiatePrefab(name);
     g.transform.SetParent(parent.transform, true);
 
     return g;
   }
 
-  void Update(){
+  void Update()
+  {
 
     //process scene transition
     if (mCurrentSceneTransition != null)
@@ -620,25 +712,30 @@ public class MainLogic : MonoBehaviour {
       return;
     }
 
-    if (Input.GetKeyUp(KeyCode.Escape)){//裝置KeyCode.Escape統一從這邊觸發
+    if (Input.GetKeyUp(KeyCode.Escape))
+    {//裝置KeyCode.Escape統一從這邊觸發
       setUIEvent("back_bt", UIEventType.BUTTON, null);
       return;
     }
 
   }
 
-  virtual public void setUIEvent(string name, UIEventType type, object[] extra_info){
-    if (mS !=null){
-      if (UIDialog._UIDialog.setUIEvent(name, type, extra_info)){
+  virtual public void setUIEvent(string name, UIEventType type, object[] extra_info)
+  {
+    if (mS != null)
+    {
+      if (UIDialog._UIDialog.setUIEvent(name, type, extra_info))
+      {
         return;
       }
 
       mS.setUIEvent(name, type, extra_info);
-      
+
     }
   }
 
-  virtual public bool getSandboxMode(){
+  virtual public bool getSandboxMode()
+  {
     return false;
   }
 
@@ -655,9 +752,12 @@ public class MainLogic : MonoBehaviour {
 
 
     //transit to new scene with random mission
-    if(mS.getSceneName() == "IntroScene"){
-      if(sdr == SceneDisposeReason.USER_EXIT){
-        mCurrentSceneTransition = new SceneTransition("LobbyScene", new object[] {  }, delegate () {
+    if (mS.getSceneName() == "IntroScene")
+    {
+      if (sdr == SceneDisposeReason.USER_EXIT)
+      {
+        mCurrentSceneTransition = new SceneTransition("LobbyScene", new object[] { }, delegate ()
+        {
           mCurrentSceneTransition = null;
         }, true);
       }
@@ -684,8 +784,10 @@ public class MainLogic : MonoBehaviour {
       if (sdr == SceneDisposeReason.USER_ACTION)
       {
         int type = (int)extra_info[0];
-        if (type == 0){
-          mCurrentSceneTransition = new SceneTransition("MazeScene", new object[] { }, delegate () {
+        if (type == 0)
+        {
+          mCurrentSceneTransition = new SceneTransition("MazeScene", new object[] { extra_info[1] }, delegate ()
+          {
             mCurrentSceneTransition = null;
           }, true);
         }
@@ -714,8 +816,10 @@ public class MainLogic : MonoBehaviour {
         //}
       }
       else
-      if (sdr == SceneDisposeReason.USER_EXIT){
-        mCurrentSceneTransition = new SceneTransition("LobbyScene", new object[] { }, delegate () {
+      if (sdr == SceneDisposeReason.USER_EXIT)
+      {
+        mCurrentSceneTransition = new SceneTransition("LobbyScene", new object[] { }, delegate ()
+        {
           mCurrentSceneTransition = null;
         }, true);
       }
@@ -723,21 +827,22 @@ public class MainLogic : MonoBehaviour {
   }
 
 
-  AndroidJavaClass android_utility_class =null;
-  public static void vibrate(int duration_ms){
-    MainLogic ml =GameObject.Find("MainLogic").GetComponent<MainLogic>();
-    if (ml ==null)
+  AndroidJavaClass android_utility_class = null;
+  public static void vibrate(int duration_ms)
+  {
+    MainLogic ml = GameObject.Find("MainLogic").GetComponent<MainLogic>();
+    if (ml == null)
       return;
-      
-#if UNITY_ANDROID && !UNITY_EDITOR
-    if (ml.mCxt.mPPM.Vibrate_T =="on"){
-      if (ml.android_utility_class ==null)
-        ml.android_utility_class =(new AndroidJavaClass("com.phardera.support.Utility"));
 
-      if (ml.android_utility_class !=null)
-        ml.android_utility_class.CallStatic("vibrate", duration_ms); //vibrate with duration 500 ms
-    }
-#endif
+    //#if UNITY_ANDROID && !UNITY_EDITOR
+    //    if (ml.mCxt.mPPM.Vibrate_T =="on"){
+    //      if (ml.android_utility_class ==null)
+    //        ml.android_utility_class =(new AndroidJavaClass("com.phardera.support.Utility"));
+
+    //      if (ml.android_utility_class !=null)
+    //        ml.android_utility_class.CallStatic("vibrate", duration_ms); //vibrate with duration 500 ms
+    //    }
+    //#endif
   }
 
 
@@ -747,30 +852,36 @@ public class MainLogic : MonoBehaviour {
   //mono 模擬器測試 從分頁模式返回遊戲 會先呼叫OnApplicationFocus(true)接著呼叫OnApplicationPause(false)
   bool ispause = false;
   bool isfocus = true;
-  void OnApplicationPause(bool pause){
+  void OnApplicationPause(bool pause)
+  {
     //Debug.Log("OnApplicationPause" + pause);
     ispause = pause;
-    if (/*!isfocus &&*/ ispause){
+    if (/*!isfocus &&*/ ispause)
+    {
       //玩家將遊戲暫停...
       PlayerPrefsManager._PlayerPrefsManager.OnPause();
     }
   }
 
-  void OnApplicationFocus(bool focus){
+  void OnApplicationFocus(bool focus)
+  {
     //Debug.Log("OnApplicationFocus" + focus);
     isfocus = focus;
-    if(isfocus && ispause){
+    if (isfocus && ispause)
+    {
       PlayerPrefsManager._PlayerPrefsManager.OnFocus();
     }
   }
 
   //處理需要在遊戲關閉後重置的參數
-  void OnApplicationQuit(){
+  void OnApplicationQuit()
+  {
     //這個只能用在Unity Editor 或是經由 程式碼的Application.Quit(); 才會被呼叫，若Android平台用分頁模式直接關閉遊戲 則不會有任何反應
     PlayerPrefsManager._PlayerPrefsManager.OnPause();
   }
 
-  string ReplaceFirst(string text, string search, string replace){
+  string ReplaceFirst(string text, string search, string replace)
+  {
     int pos = text.IndexOf(search);
     if (pos < 0)
     {
@@ -779,11 +890,13 @@ public class MainLogic : MonoBehaviour {
     return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
   }
 
-  string stage_id_to_stage_no(string stage_id){
-    return int.Parse(stage_id.Substring(stage_id.Length-2, 2)).ToString();
+  string stage_id_to_stage_no(string stage_id)
+  {
+    return int.Parse(stage_id.Substring(stage_id.Length - 2, 2)).ToString();
   }
 
-  public float getCameraWidth(){
+  public float getCameraWidth()
+  {
     if (camera_go == null)
       return 0.0f;
     return camera_go.GetComponent<ConfigCamera>().desiredWidth;

@@ -3,19 +3,17 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class UseItemDialog :  IDialogContext
+public class TipDialog :  IDialogContext
 {
 
-  public UseItemDialog(string msg, Sprite itemicon, InteractiveDiaLogHandler[] handlers){
+  public TipDialog(string msg, InteractiveDiaLogHandler handlers){
     message = msg;
-    micon = itemicon;
     bt_handlers = handlers;
   }
   bool binited = false;
   string message;
-  Sprite micon = null;
   GameObject dlgGO = null;
-  InteractiveDiaLogHandler[] bt_handlers;
+  InteractiveDiaLogHandler bt_handlers;
   public bool dismiss()
   {
     GameObject.Destroy(dlgGO);
@@ -33,17 +31,11 @@ public class UseItemDialog :  IDialogContext
   }
 
   public GameObject init(int dlgIdx, AssetbundleLoader abl){
-      dlgGO = abl.InstantiatePrefab("UseItemDialog");
+      dlgGO = abl.InstantiatePrefab("TipDialog");
       binited = true;
 
       TextMeshPro text = dlgGO.transform.Find("Bg/text").GetComponent<TextMeshPro>();
       text.text = message;
-
-      SpriteRenderer icon_sr = dlgGO.transform.Find("Bg/icon_bg/icon").GetComponent<SpriteRenderer>();
-      icon_sr.sprite = micon;
-
-    if (micon == null)
-      dlgGO.transform.Find("Bg/icon_bg").gameObject.SetActive(false);
 
 
     return dlgGO;
@@ -59,14 +51,8 @@ public class UseItemDialog :  IDialogContext
     if(type == UIEventType.BUTTON){
       if(name == "dialog_Yes_bt"){
         AudioController._AudioController.playOverlapEffect("yes_no_使用道具_按鍵音效");
-        if (bt_handlers[1] != null)
-          bt_handlers[1]();
-        return DialogResponse.TAKEN_AND_DISMISS;
-      }
-      else if(name == "dialog_No_bt"){
-        AudioController._AudioController.playOverlapEffect("yes_no_使用道具_按鍵音效");
-        if (bt_handlers[0] != null)
-          bt_handlers[0]();
+        if (bt_handlers != null)
+          bt_handlers();
         return DialogResponse.TAKEN_AND_DISMISS;
       }
     }

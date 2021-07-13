@@ -6,15 +6,17 @@ using UnityEngine;
 public class ADSDialog :  IDialogContext
 {
 
-  public ADSDialog(Sprite itemicon, InteractiveDiaLogHandler[] handlers){
+  public ADSDialog(Sprite itemicon,int adreward, InteractiveDiaLogHandler[] handlers){
     micon = itemicon;
     bt_handlers = handlers;
+    this.adreward = adreward;
   }
   bool binited = false;
   string message;
   Sprite micon = null;
   GameObject dlgGO = null;
   InteractiveDiaLogHandler[] bt_handlers;
+  int adreward;
   public bool dismiss()
   {
     GameObject.Destroy(dlgGO);
@@ -42,11 +44,11 @@ public class ADSDialog :  IDialogContext
     icon_sr = dlgGO.transform.Find("Bg/dialog_Yes_bt/icon").GetComponent<SpriteRenderer>();
     icon_sr.sprite = micon;
 
-    int noadsamount = 4;
+    int noadsamount = 1;
     TextMeshPro text = dlgGO.transform.Find("Bg/dialog_No_bt/amount").GetComponent<TextMeshPro>();
     text.text = "x" + noadsamount;
 
-    int adsamount = 8;
+    int adsamount = adreward;
     text = dlgGO.transform.Find("Bg/dialog_Yes_bt/amount").GetComponent<TextMeshPro>();
     text.text = "x" + adsamount;
 
@@ -62,13 +64,18 @@ public class ADSDialog :  IDialogContext
   {
     if(type == UIEventType.BUTTON){
       if(name == "dialog_Yes_bt"){
-        if(bt_handlers[0] != null)
+        AudioController._AudioController.playOverlapEffect("yes_no_使用道具_按鍵音效");
+        if (bt_handlers[0] != null)
           bt_handlers[0]();
         return DialogResponse.TAKEN_AND_DISMISS;
       }
       else if(name == "dialog_No_bt"){
+        AudioController._AudioController.playOverlapEffect("yes_no_使用道具_按鍵音效");
         if (bt_handlers[1] != null)
           bt_handlers[1]();
+
+
+
         return DialogResponse.TAKEN_AND_DISMISS;
       }
     }

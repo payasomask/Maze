@@ -122,44 +122,44 @@ public class AudioController : MonoBehaviour {
     curr_active_slot_bgm_type =type;
   }
 
-  string getAudioFileID(string audio_name){
-    string ext_audio_name =audio_name;
-    if (ext_audio_name.Contains("sfx_")){
-      ext_audio_name+=".wav";
-    }else
-    if (ext_audio_name.Contains("bgm_slot_")){
+  //string getAudioFileID(string audio_name){
+  //  string ext_audio_name =audio_name;
+  //  if (ext_audio_name.Contains("sfx_")){
+  //    ext_audio_name+=".wav";
+  //  }else
+  //  if (ext_audio_name.Contains("bgm_slot_")){
       
-    }else
-    if (ext_audio_name.Contains("bgm_")){
-      ext_audio_name+=".ogg";
-    }
-    if (audio_file_id_mapper.ContainsKey(ext_audio_name)){
-      return audio_file_id_mapper[ext_audio_name];
-    }
-    if (curr_active_slot_bgm_type !=null){
-      if (slot_bgm_file_id_mapper[curr_active_slot_bgm_type].ContainsKey(ext_audio_name)){
-        return slot_bgm_file_id_mapper[curr_active_slot_bgm_type][ext_audio_name];
-      }
-    }
+  //  }else
+  //  if (ext_audio_name.Contains("bgm_")){
+  //    ext_audio_name+=".ogg";
+  //  }
+  //  if (audio_file_id_mapper.ContainsKey(ext_audio_name)){
+  //    return audio_file_id_mapper[ext_audio_name];
+  //  }
+  //  if (curr_active_slot_bgm_type !=null){
+  //    if (slot_bgm_file_id_mapper[curr_active_slot_bgm_type].ContainsKey(ext_audio_name)){
+  //      return slot_bgm_file_id_mapper[curr_active_slot_bgm_type][ext_audio_name];
+  //    }
+  //  }
 
-    Debug.LogError("133 - file id for audio_name : "+audio_name+" not found, (curr_active_slot_bgm_type:"+curr_active_slot_bgm_type+")");
-    return null;
-  }
+  //  Debug.LogError("133 - file id for audio_name : "+audio_name+" not found, (curr_active_slot_bgm_type:"+curr_active_slot_bgm_type+")");
+  //  return null;
+  //}
 
   void preloadClip(string file_id){
     if (mAudioClipMap.ContainsKey(file_id)==true)
       return;
 
-    if (file_id_audio_setup_mapper.ContainsKey(file_id)==false){
-      Debug.LogError("149 - failed to get AudioSetup data (file_id:"+file_id+")");
-      return;
-    }
+    //if (file_id_audio_setup_mapper.ContainsKey(file_id)==false){
+    //  Debug.LogError("149 - failed to get AudioSetup data (file_id:"+file_id+")");
+    //  return;
+    //}
 
     //find audio clip
     AudioClip ac = AssetbundleLoader._AssetbundleLoader.InstantiateAudio(file_id);
 
     if (ac !=null){
-      mAudioClipMap.Add(file_id, new object[]{ac, file_id_audio_setup_mapper[file_id]});
+      mAudioClipMap.Add(file_id, new object[] { ac });
     }else{
       Debug.LogError("154 - failed to preload clip (file_id:"+file_id+", file_name:"+file_id_audio_setup_mapper[file_id].audio_name+", assetbundle:"+file_id_audio_setup_mapper[file_id].assetbundle_id+")");
     }
@@ -251,13 +251,13 @@ public class AudioController : MonoBehaviour {
       return;
     }
 
-    string file_id =getAudioFileID(audio_name);
-    if (file_id ==null){
-      Debug.LogWarning("308 - failed to play audio : " + audio_name+" (file id not found)");
-      return;
-    }
-    preloadClip(file_id);
-    if (mAudioClipMap.ContainsKey(file_id) == false)
+    //string file_id =getAudioFileID(audio_name);
+    //if (file_id ==null){
+    //  Debug.LogWarning("308 - failed to play audio : " + audio_name+" (file id not found)");
+    //  return;
+    //}
+    preloadClip(audio_name);
+    if (mAudioClipMap.ContainsKey(audio_name) == false)
     {
       Debug.LogWarning("135 - failed to play audio : " + audio_name);
       return;
@@ -265,7 +265,7 @@ public class AudioController : MonoBehaviour {
 
     Debug.LogWarning("254 - cross fade bgm from "+getCurrentPlayingAudioClip(Channel.BGM)+" to "+audio_name);    
 
-    float vol =find_audio_vol_fid(file_id);
+    float vol =find_audio_vol_fid(audio_name);
 
     fadeOutBGMAS =mAs[getActualASIdx(Channel.BGM)];
     fadeInBGMAS =mAs[(getActualASIdx(Channel.BGM)+1)%2];
@@ -273,7 +273,7 @@ public class AudioController : MonoBehaviour {
     // Debug.Log("785 - CurrentfadeInBGMAS :" + fadeInBGMAS.outputAudioMixerGroup.name);
     current_bgm_channel =(ActualBGMChannel)((getActualASIdx(Channel.BGM)+1)%2); //SWITCH ACTUAL BGM CHANNEL
 
-    fadeInBGMAS.clip = (AudioClip)mAudioClipMap[file_id][0];
+    fadeInBGMAS.clip = (AudioClip)mAudioClipMap[audio_name][0];
     fadeInBGMAS.clip.name = audio_name;
     fadeInBGMAS.loop = loop;
     fadeInBGMAS.time =0.0f;
@@ -293,9 +293,9 @@ public class AudioController : MonoBehaviour {
   }
 
   public float find_audio_vol(string filename){
-    string file_id =getAudioFileID(filename);
-    if (file_id !=null){
-      return find_audio_vol_fid(file_id);
+    //string file_id =getAudioFileID(filename);
+    if (filename != null){
+      return find_audio_vol_fid(filename);
     }
     Debug.Log("374 - failed to find audio vol (filename="+filename+")");
     return 1f;
@@ -303,11 +303,11 @@ public class AudioController : MonoBehaviour {
 
   float find_audio_vol_fid(string file_id){
     float vol =1f;
-    if (file_id_audio_setup_mapper.ContainsKey(file_id)){
-      vol =file_id_audio_setup_mapper[file_id].vol;
-    }else{
-      Debug.LogError("339 - vol data not found (file_id="+file_id+")");
-    }
+    //if (file_id_audio_setup_mapper.ContainsKey(file_id)){
+    //  vol =file_id_audio_setup_mapper[file_id].vol;
+    //}else{
+    //  Debug.LogError("339 - vol data not found (file_id="+file_id+")");
+    //}
     return vol;
   }
 
@@ -336,20 +336,20 @@ public class AudioController : MonoBehaviour {
       return;
     }
 
-    string file_id =getAudioFileID(audio_name);
-    if (file_id ==null){
-      Debug.LogWarning("308 - failed to play audio : " + audio_name+" (file id not found)");
-      return;
-    }
-    preloadClip(file_id);
-    if (mAudioClipMap.ContainsKey(file_id)==false){
+    //string file_id =getAudioFileID(audio_name);
+    //if (file_id ==null){
+    //  Debug.LogWarning("308 - failed to play audio : " + audio_name+" (file id not found)");
+    //  return;
+    //}
+    preloadClip(audio_name);
+    if (mAudioClipMap.ContainsKey(audio_name) ==false){
       Debug.LogWarning("135 - failed to play audio : "+audio_name);
       return;
     }
 
     stop(c);
 
-    mAs[getActualASIdx(c)].clip =(AudioClip)mAudioClipMap[file_id][0];
+    mAs[getActualASIdx(c)].clip =(AudioClip)mAudioClipMap[audio_name][0];
     mAs[getActualASIdx(c)].clip.name =audio_name;
     mAs[getActualASIdx(c)].loop =true;
     mAs[getActualASIdx(c)].time =0f;
@@ -358,7 +358,7 @@ public class AudioController : MonoBehaviour {
 
     FadeTask ft =new FadeTask();
     ft.startFadeVol =0f;
-    ft.endFadeVol =find_audio_vol_fid(file_id);
+    ft.endFadeVol =find_audio_vol_fid(audio_name);
 
     ft.fadeChannel =c;
 
@@ -411,13 +411,13 @@ public class AudioController : MonoBehaviour {
     if (getCurrentPlayingAudioClip(c)==audio_name)
       return;
 
-    string file_id =getAudioFileID(audio_name);
-    if (file_id ==null){
-      Debug.LogWarning("308 - failed to play audio : " + audio_name+" (file id not found)");
-      return;
-    }
-    preloadClip(file_id);
-    if (mAudioClipMap.ContainsKey(file_id)==false){
+    //string file_id =getAudioFileID(audio_name);
+    //if (file_id ==null){
+    //  Debug.LogWarning("308 - failed to play audio : " + audio_name+" (file id not found)");
+    //  return;
+    //}
+    preloadClip(audio_name);
+    if (mAudioClipMap.ContainsKey(audio_name) ==false){
       Debug.LogWarning("135 - failed to play audio : "+audio_name);
       return;
     }
@@ -433,11 +433,11 @@ public class AudioController : MonoBehaviour {
 
     stop(c);
 
-    float vol =find_audio_vol_fid(file_id);
+    float vol =find_audio_vol_fid(audio_name);
 
     //play now
     mAs[getActualASIdx(c)].volume =vol;
-    mAs[getActualASIdx(c)].clip =(AudioClip)mAudioClipMap[file_id][0];
+    mAs[getActualASIdx(c)].clip =(AudioClip)mAudioClipMap[audio_name][0];
     mAs[getActualASIdx(c)].clip.name =audio_name;
     mAs[getActualASIdx(c)].loop =loop;
     mAs[getActualASIdx(c)].time =start_position;
@@ -459,18 +459,18 @@ public class AudioController : MonoBehaviour {
       return;
     }
 
-    string file_id =getAudioFileID(audio_name);
-    if (file_id ==null){
-      Debug.LogWarning("308 - failed to play audio : " + audio_name+" (file id not found)");
-      return;
-    }
-    preloadClip(file_id);
-    if (mAudioClipMap.ContainsKey(file_id)==false){
+    //string file_id =getAudioFileID(audio_name);
+    //if (file_id ==null){
+    //  Debug.LogWarning("308 - failed to play audio : " + audio_name+" (file id not found)");
+    //  return;
+    //}
+    preloadClip(audio_name);
+    if (mAudioClipMap.ContainsKey(audio_name) ==false){
       Debug.LogWarning("169 - failed to play audio : "+audio_name);
       return;
     }
 
-    float vol =find_audio_vol_fid(file_id);
+    float vol =find_audio_vol_fid(audio_name);
     mAs[getActualASIdx(c)].volume =1f; //reset basic volume gain
     mAs[getActualASIdx(c)].outputAudioMixerGroup.audioMixer.SetFloat("Pitch Shifter", 1.0f);//reset Pitch Shifter
     mAs[getActualASIdx(c)].outputAudioMixerGroup.audioMixer.SetFloat("Pitch", 1.0f);//reset Pitch
@@ -478,7 +478,7 @@ public class AudioController : MonoBehaviour {
     mAs[getActualASIdx(c)].outputAudioMixerGroup.audioMixer.SetFloat("Pitch Shifter", 1.0f / Time.timeScale);
     mAs[getActualASIdx(c)].outputAudioMixerGroup.audioMixer.SetFloat("Pitch", 1.0f * Time.timeScale);
     }
-    mAs[getActualASIdx(c)].PlayOneShot((AudioClip)mAudioClipMap[file_id][0], vol);
+    mAs[getActualASIdx(c)].PlayOneShot((AudioClip)mAudioClipMap[audio_name][0], vol);
   }
 
   public void stop(Channel c, bool stopOneShotEffect =false){

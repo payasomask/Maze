@@ -5,7 +5,7 @@ using System;
 
 public class HuntKillMaze : Maze
 {
-  public HuntKillMaze(int max_row, int max_column, int grid_size, Vector3 maze_pivot)
+  public HuntKillMaze(int max_row, int max_column, float grid_size, Vector3 maze_pivot)
   {
     this.max_columns = max_column;
     this.max_rows = max_row;

@@ -12,6 +12,7 @@ public class MazeManager : MonoBehaviour
   private int maze_rows, maze_columns;
   private float maze_cellsize;
   private MazeScene mMS = null;
+  private MazeConfig Mazeconfig = null;
 
   private void Awake()
   {
@@ -26,9 +27,9 @@ public class MazeManager : MonoBehaviour
   {
 
   }
-
-  public void Init(MazeScene ms){
+  public void Init(MazeScene ms,MazeConfig config){
     mMS = ms;
+    Mazeconfig = config;
   }
   //這邊盡量是維持在768/1024的比例
   public void CreatMaze(int rows,int columns){
@@ -44,8 +45,13 @@ public class MazeManager : MonoBehaviour
     //透過(下緣位置 - 整個迷宮的一半高度) = 需要調整的Y，重新計算pivot.y
     //最終迷宮位置的調整 cell - maze_pivot，這裡必須調整成這樣
     maze_pivot.y = maze_pivot.y - (mMS.GetMazeTopUIBottom() - maze_pivot.y);
-    if (mMazeSpawn == null)
-      mMazeSpawn = new PrimsMaze(maze_rows, maze_columns, maze_cellsize, maze_pivot);
+
+    if (mMazeSpawn == null){
+      if(UtilityHelper.Random(0,(int)MazeType.SZ) == 0)
+        mMazeSpawn = new PrimsMaze(maze_rows, maze_columns, maze_cellsize, maze_pivot);
+      else
+        mMazeSpawn = new HuntKillMaze(maze_rows, maze_columns, maze_cellsize, maze_pivot);
+    }
 
     mMazeSpawn.BuildMaze();
 
@@ -74,8 +80,8 @@ public class MazeManager : MonoBehaviour
     goalcontroller.init((int)GoalStartLoaction.x, (int)GoalStartLoaction.y, maze_cellsize);
 
     //隨機寶箱
-    //if (UtilityHelper.Random(0, 10) >= 0){
-    if (UtilityHelper.Random(0, 10) < 3){
+    if (UtilityHelper.Random(0, 10) >= 0){
+    //if (UtilityHelper.Random(0, 10) < 3){
 
       //寶相的位置先暫定是角落好了，最不會有問題
       //起點跟終點都在角落所以我直接隨機一個小一圈的範圍就好了
@@ -100,7 +106,9 @@ public class MazeManager : MonoBehaviour
     }
 
 
-    //MaskManager._MaskManager.AddBlack("black",Vector2.zero, new Vector2(maze_columns * maze_cellsize, maze_rows * maze_cellsize));
+    if(mMS.mGameType == GameType.NIGHT)
+      MaskManager._MaskManager.AddBlack("black", new Vector2(maze_columns * maze_cellsize, maze_rows * maze_cellsize));
+
     MaskManager._MaskManager.HideMask("box");
 
     //FloorManager._FloorManager.init();
@@ -116,8 +124,16 @@ public class MazeManager : MonoBehaviour
     return size;
   }
 
+  public Vector2 GetMazeSize(){
+    return new Vector2(maze_cellsize * maze_columns, maze_cellsize * maze_rows);
+  }
+
   public float getCellSize(){
     return maze_cellsize;
+  }
+
+  public float GetMaze_Pivot(){
+    return mMS.GetMazeTopUIBottom() - (maze_cellsize * maze_rows * 0.5f);
   }
 
 

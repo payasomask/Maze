@@ -21,8 +21,9 @@ public class PlayerItemManager : MonoBehaviour
   }
 
   public void UseOilLamp(float oillampmaskscale){
-    float currentscale = MazeManager._MazeManager.PlayerMaskScale();
-    MaskManager._MaskManager.SetMaskScale("player", currentscale * oillampmaskscale);
+    float playerscale = MazeManager._MazeManager.PlayerMaskScale();
+    float mazescale = MazeManager._MazeManager.getCellSize();
+    MaskManager._MaskManager.SetMaskScale("player", playerscale * oillampmaskscale * mazescale);
   }
   public void UseStaff()
   {

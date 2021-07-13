@@ -77,14 +77,16 @@ public class MaskManager : MonoBehaviour
   }
 
   public void SetMaskScale(string name, float scale){
+    float spirtescale = Circle.bounds.size.x;//根據原圖大小還原比例
+
     foreach (var v in mask_dic)
     {
       if (v.Value.name == name)
       {
-        v.Value.t.localScale = new Vector3(scale, scale, 1.0f);
+        v.Value.t.localScale = new Vector3(scale / spirtescale, scale/ spirtescale, 1.0f);
         SineScale ss = v.Value.t.GetComponent<SineScale>();
         if(ss != null){
-          ss.setScale(scale);
+          ss.setScale(scale / spirtescale);
         }
       }
     }
@@ -114,13 +116,16 @@ public class MaskManager : MonoBehaviour
 
  
 
-  public void AddBlack(string name, Vector2 Position, Vector2 scale)
+  public void AddBlack(string name, Vector2 scale)
   {
     MaskData tmp = new MaskData();
     GameObject go = new GameObject(name + "_" + blackid);
     go.transform.SetParent(gameObject.transform);
     float depth = -5;
-    go.transform.localPosition = new Vector3(Position.x,Position.y, depth);
+    //因應迷宮偏移調整black的中心點
+    float offset_pivot = MazeManager._MazeManager.GetMaze_Pivot();
+    go.transform.localPosition = new Vector3(0.0f, offset_pivot, depth);
+
     SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
     sr.sprite = Square;
     sr.color = Color.black;

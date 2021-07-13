@@ -20,7 +20,19 @@ SpriteAtlas:
       readable: 1
       crunchedCompression: 0
       sRGB: 1
-    platformSettings: []
+    platformSettings:
+    - serializedVersion: 3
+      m_BuildTarget: DefaultTexturePlatform
+      m_MaxTextureSize: 2048
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: -1
+      m_TextureCompression: 1
+      m_CompressionQuality: 50
+      m_CrunchedCompression: 0
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 0
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
     packingSettings:
       serializedVersion: 2
       padding: 8
@@ -32,13 +44,14 @@ SpriteAtlas:
     variantMultiplier: 1
     packables:
     - {fileID: 102900000, guid: 40ef02399cd6a6b429b0ee302da2f08d, type: 3}
-    totalSpriteSurfaceArea: 1832946
+    totalSpriteSurfaceArea: 2876231
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
   - {fileID: 21300000, guid: ded57f60285fa1a47b65677b33dad52c, type: 3}
+  - {fileID: 21300000, guid: 531aeae24e331374ab206f06173cf70b, type: 3}
   - {fileID: 21300000, guid: 7712af53838e4944d8eee507832a14d5, type: 3}
   - {fileID: 21300000, guid: 01ceb5830cd1e844d86f8ca3f6754b54, type: 3}
   - {fileID: 21300000, guid: 906b01f3690cad246bbcc67646de6a17, type: 3}
@@ -46,7 +59,9 @@ SpriteAtlas:
   - {fileID: 21300000, guid: fccc571430e0f7d46af02f6f928be28f, type: 3}
   - {fileID: 21300000, guid: 7464be8423d74b6408fc6a5ae54e945c, type: 3}
   - {fileID: 21300000, guid: 64bea806cc3daf9439e30c0545d96874, type: 3}
+  - {fileID: 21300000, guid: 487b3e67e4a6df7488756178563d7488, type: 3}
   - {fileID: 21300000, guid: 2e9788b7308211647a6130a4bb7143f4, type: 3}
+  - {fileID: 21300000, guid: 47d772b83ce7e3b419a97fc10caf0dbf, type: 3}
   - {fileID: 21300000, guid: 8b969cd87a9751b418b10ceefd7c9b04, type: 3}
   - {fileID: 21300000, guid: 7d1d79e8ed6700048baf9773c8a0bc70, type: 3}
   - {fileID: 21300000, guid: 25d1bce8f775da34e91fd6b006f5ac7c, type: 3}
@@ -55,12 +70,14 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 42bb4a5989466bb4685c3b0a8115d553, type: 3}
   - {fileID: 21300000, guid: f23cfe5ad851c3444a7a5278011b0cf6, type: 3}
   - {fileID: 21300000, guid: 9f8d058a741d78143931d027516c1086, type: 3}
+  - {fileID: 21300000, guid: 8067bf1b66ce701448d84622fb7120b9, type: 3}
   - {fileID: 21300000, guid: ad8af2fd0b3ebd54baf24ba2e3e6bf94, type: 3}
   - {fileID: 21300000, guid: d390a41ebe5f83c4e89a77f66936760c, type: 3}
   - {fileID: 21300000, guid: 3fa2626e2c1d33f4c8861f93f13daa11, type: 3}
   - {fileID: 21300000, guid: bdec303fc86e6f74cbfcf9db0bce022a, type: 3}
   m_PackedSpriteNamesToIndex:
   - play_gray
+  - item_ban_cover
   - bottom_bar
   - white_pt
   - toch
@@ -68,7 +85,9 @@ SpriteAtlas:
   - main_board
   - lamp
   - button_banner
+  - intro
   - brick
+  - light_maze
   - message_board
   - top_bar
   - no_button
@@ -77,6 +96,7 @@ SpriteAtlas:
   - 8x8
   - inn_point
   - main
+  - dark_maze
   - yes_button
   - button
   - pause

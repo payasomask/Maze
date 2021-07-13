@@ -9,6 +9,7 @@ public class MazeScene : MonoBehaviour,IScene
   string secneName;
   SceneDisposeHandler pDisposeHandler = null;
   bool mInited = false;
+  bool isadwatched = false;
 
   TextMeshPro timer;
   //TextMeshPro itemtimer;
@@ -20,6 +21,12 @@ public class MazeScene : MonoBehaviour,IScene
   UIButton oillampbt = null;
 
   GameObject mRoot = null;
+  MazeConfig config = null;
+  public GameType mGameType;
+  int currentlevel;
+
+  //倒數10-1是否已經播放過
+  bool fsx_played = false;
 
   //UIButton staffbt = null;
   //bool staff_used = false;
@@ -29,6 +36,9 @@ public class MazeScene : MonoBehaviour,IScene
     NULL = 0,
 
     CREAT_MAZE,
+
+    CHECK_ADS,
+    PLAY_ADS,
 
     IDLE,
     STOP,
@@ -64,8 +74,12 @@ public class MazeScene : MonoBehaviour,IScene
   {
     //...do somthing init
 
-    GameObject dynamicObj = gameObject;
+   mGameType = (GameType)extra_param[0];
 
+    currentlevel = mGameType == GameType.LIGHT ? PlayerPrefsManager._PlayerPrefsManager.LightMazeLevel : PlayerPrefsManager._PlayerPrefsManager.DarkMazeLevel;
+
+    GameObject dynamicObj = gameObject;
+    config = JsonLoader._JsonLoader.GetMazeConfig(currentlevel);
     //
     // Intro prefab
     //
@@ -75,22 +89,28 @@ public class MazeScene : MonoBehaviour,IScene
       mRoot = instantiateObject(dynamicObj, "Maze");
     }
 
-
-    gametime = 1.00f;
+    //不可以小於10秒，因為音效是做10秒開始
+    gametime = config.LimitTime;
     timer = mRoot.transform.Find("TopUI/bg/timer").GetComponent<TextMeshPro>();
     updateGameTime(gametime);
 
     torchbt = mRoot.transform.Find("DownUI/bg/Torchbt").GetComponent<UIButton>();
     oillampbt = mRoot.transform.Find("DownUI/bg/oillampbt").GetComponent<UIButton>();
     //staffbt = cc.transform.Find("DownUI/staffbt").GetComponent<UIButton>();
-
+    mRoot.transform.Find("TopUI/bg/level").GetComponent<TextMeshPro>().text = "Class-" + currentlevel;
     //itemtimer = cc.transform.Find("DownUI/itemtimer").GetComponent<TextMeshPro>();
 
     MaskManager._MaskManager.Init();
-    MazeManager._MazeManager.Init(this);
+    MazeManager._MazeManager.Init(this,config);
+    updateUI();
 
     currentstate = State.CREAT_MAZE;
     mInited = true;
+
+    AdsHelper._AdsHelper.RequestRewardAds();
+    AdsHelper._AdsHelper.RequestBannerAds(()=> {
+      currentstate = State.IDLE;
+    });
 
     return;
   }
@@ -109,13 +129,62 @@ public class MazeScene : MonoBehaviour,IScene
   {
     pDisposeHandler = pHandler;
   }
-
+  //Vector2 slider_dir = Vector2.zero;
   public void setUIEvent(string name, UIEventType type, object[] extra_info)
   {
+    if(type == UIEventType.TOUCH_LEAVE){
+      if(name == "SilderReceiver"){
+        Vector2 slider_dir = (Vector2)extra_info[0];
+
+        Debug.Log("TOUCH_LEAVE， slider_dir :" + slider_dir);
+
+        if (slider_dir == Vector2.zero)
+          return;
+
+        if (currentstate != State.IDLE)
+          return;
+
+        //開始判斷方向，先分辨是左右大還是上下大
+        float horizontalstr, vertaiclstr;
+        horizontalstr = Mathf.Abs(slider_dir.x);
+        vertaiclstr = Mathf.Abs(slider_dir.y);
+        if (vertaiclstr >= horizontalstr)
+        {
+          if (slider_dir.y >= 0.0f)
+          {
+            //往上移動
+            PlayerControll(Dir.Top);
+          }
+          else
+          {
+            //往下移動
+            PlayerControll(Dir.Bottom);
+          }
+        }
+        else
+        {
+          if (slider_dir.x >= 0.0f)
+          {
+            //往右移動
+            PlayerControll(Dir.Right);
+
+          }
+          else
+          {
+            //往左移動
+            PlayerControll(Dir.Left);
+
+          }
+        }
+      }
+      
+    }
+    else
     if (type == UIEventType.BUTTON)
     {
       if (name == "stopbt")
       {
+        AudioController._AudioController.playOverlapEffect("暫停按鈕音效");
         SpriteRenderer bt = transform.Find("Maze(Clone)/TopUI/bg/stopbt").GetComponent<SpriteRenderer>();
         SpriteRenderer icon = transform.Find("Maze(Clone)/TopUI/bg/stopbt/icon").GetComponent<SpriteRenderer>();
         bt.gameObject.name = "playbt";
@@ -125,6 +194,7 @@ public class MazeScene : MonoBehaviour,IScene
 
       }
       else if(name == "playbt"){
+        AudioController._AudioController.playOverlapEffect("暫停按鈕音效");
         SpriteRenderer bt = transform.Find("Maze(Clone)/TopUI/bg/playbt").GetComponent<SpriteRenderer>();
         SpriteRenderer icon = transform.Find("Maze(Clone)/TopUI/bg/playbt/icon").GetComponent<SpriteRenderer>();
         bt.gameObject.name = "stopbt";
@@ -136,7 +206,7 @@ public class MazeScene : MonoBehaviour,IScene
       }
       else if (name == "Torchbt")
       {
-
+        AudioController._AudioController.playOverlapEffect("yes_no_使用道具_按鍵音效");
         //...
         UIDialog._UIDialog.show(new UseItemDialog("Use a torch?", AssetbundleLoader._AssetbundleLoader.InstantiateSprite("common", "toch"), new InteractiveDiaLogHandler[] {
       ()=>{
@@ -147,6 +217,9 @@ public class MazeScene : MonoBehaviour,IScene
       ()=>{
         //YES
         PlayerItemManager._PlayerItemManager.UseTorch(MazeManager._MazeManager.PlayerPosition());
+        PlayerPrefsManager._PlayerPrefsManager.TorchNum--;
+        updateUI();
+
         currentstate = State.IDLE;
         return;
       }
@@ -156,15 +229,19 @@ public class MazeScene : MonoBehaviour,IScene
       }
       else if (name == "oillampbt")
       {
+        AudioController._AudioController.playOverlapEffect("yes_no_使用道具_按鍵音效");
         UIDialog._UIDialog.show(new UseItemDialog("Use a oillamp?", AssetbundleLoader._AssetbundleLoader.InstantiateSprite("common", "lamp"), new InteractiveDiaLogHandler[] {
       ()=>{
         currentstate = State.IDLE;
         return;
       },
       ()=>{
-        PlayerItemManager._PlayerItemManager.UseOilLamp(5.0f);
+        PlayerItemManager._PlayerItemManager.UseOilLamp(2.0f);
         MaskManager._MaskManager.ShowMask("box");
         Timer oillamptimer = oillampbt.gameObject.AddComponent<Timer>();
+        PlayerPrefsManager._PlayerPrefsManager.OilLampNum--;
+        updateUI();
+
         oillamptimerID = oillamptimer.start(10.0f , ()=>{
           //回復玩家mask範圍
           PlayerItemManager._PlayerItemManager.UseOilLamp(1.0f);
@@ -177,6 +254,31 @@ public class MazeScene : MonoBehaviour,IScene
       }
       }));
         currentstate = State.WAITPLAYER;
+      }
+      else if(name == "adsTorch"){
+        AudioController._AudioController.playOverlapEffect("yes_no_使用道具_按鍵音效");
+        currentstate = State.PLAY_ADS;
+        mRoot.transform.Find("DownUI/bg/adsTorch").gameObject.SetActive(false);
+        isadwatched = true;
+        AdsHelper._AdsHelper.ShowRewardAd(()=> {
+          currentstate = State.IDLE;
+          return;
+        }, 
+        
+        () => {
+          GetAdReward(config.DownUIReward.Type, config.DownUIReward.Num);
+          currentstate = State.IDLE;
+          return;
+        },
+                  () => {
+                    //這個主動點的不給獎勵
+                    UIDialog._UIDialog.show(new TipDialog("Failed get AD video",
+                      () => {
+                        currentstate = State.IDLE;
+                        return;
+                      }));
+                  }
+        );
       }
       //else if (name == "staffbt")
       //{
@@ -209,11 +311,15 @@ public class MazeScene : MonoBehaviour,IScene
 
   void Update(){
 
-    if (Input.GetKeyUp(KeyCode.R)){
-      CREAT_MAZE();
+    if (Input.GetKeyUp(KeyCode.R))
+    {
+      //CREAT_MAZE();
+      pDisposeHandler(SceneDisposeReason.USER_EXIT, null);
+      currentstate = State.WAITPLAYER;
+      return;
     }
 
-    if(currentstate == State.STOP){
+    if (currentstate == State.STOP){
       return;
     }
 
@@ -230,33 +336,93 @@ public class MazeScene : MonoBehaviour,IScene
       updateGameTime(gametime);
       //updateItemTimer();
 
-      PlayerControll();
+      //PlayerControll();
     }
     else
     if (currentstate == State.CREAT_MAZE){
 
+      //4:3或是方形
       MazeManager._MazeManager.ClearMaze();
-      //維持4:3
-      //4可以小 : 3可以大
-      MazeManager._MazeManager.CreatMaze(9, 9);
-      gametime = 1000.0f;
+      MazeManager._MazeManager.CreatMaze(config.Rows, config.Columns);
+      gametime = config.LimitTime;
 
+      //重製倒數的音效
+      fsx_played = false;
+
+      GameObject SilderReceiver = mRoot.transform.Find("SilderReceiver").gameObject;
+      SilderReceiver.GetComponent<BoxCollider2D>().size = MazeManager._MazeManager.GetMazeSize();
+      SilderReceiver.GetComponent<BoxCollider2D>().offset = new Vector2(0.0f, MazeManager._MazeManager.GetMaze_Pivot());
+
+      //動態調整downUI的位置
+      Transform DownUI = mRoot.transform.Find("DownUI/bg").transform;
+      float depth = DownUI.localPosition.z;
+      float downuibg_y = DownUI.GetComponent<SpriteRenderer>().sprite.bounds.size.y * 0.5f;
+      DownUI.localPosition = new Vector3(0.0f, GetMazeTopUIBottom() - MazeManager._MazeManager.GetMazeSize().y - downuibg_y, depth);
+
+      
 
       currentstate = State.IDLE;
-      return;
+    }else if(currentstate == State.CHECK_ADS){
+      //檢查一些有的沒的判斷一鰾縣市廣告
+      //bool shoads = PlayerPrefsManager._PlayerPrefsManager.IsPlayTimesODD();
+      //if (shoads){
+      //  AdsHelper._AdsHelper.ShowInterstitialAds(()=> {
+      //    //結束廣告後，返回大廳
+      //    GetAdReward(config.CompletedReward.Type, config.CompletedReward.Num);
+      //    });
+      //  currentstate = State.PLAY_ADS;
+      //  return;
+      //}
+
+      ////返回大廳
+      //currentstate = State.WAITPLAYER;
+      //AdsHelper._AdsHelper.DismissBannerAds();
+      //pDisposeHandler(SceneDisposeReason.USER_EXIT, null);
+      //return;
+
+      //不用播廣告看是要幹嘛...就繼續下一關
+      //CREAT_MAZE();
     }
     else if(currentstate == State.GAME_OVER){
 
+      stepPlayMazeTimes();
+
       //...
-      UIDialog._UIDialog.show(new UseItemDialog("Times up, reset?",null, new InteractiveDiaLogHandler[] {
+      UIDialog._UIDialog.show(new FinishDialog( FinishDialog.Type.GameOver, currentlevel, new InteractiveDiaLogHandler[] {
       ()=>{
         //返回大廳
         pDisposeHandler( SceneDisposeReason.USER_EXIT,null);
+        GetAdReward(config.GameOverReward.SkipType,config.GameOverReward.SkipNum);
+        AdsHelper._AdsHelper.DismissBannerAds();
         return;
       },
       ()=>{
         //重製迷宮，或是使用原迷宮?
-        CREAT_MAZE();
+        //CREAT_MAZE();
+                AdsHelper._AdsHelper.ShowRewardAd(()=>{
+          AdsHelper._AdsHelper.DismissBannerAds();
+          pDisposeHandler( SceneDisposeReason.USER_EXIT,null);
+          return;
+        },()=>{
+          AdsHelper._AdsHelper.DismissBannerAds();
+          pDisposeHandler( SceneDisposeReason.USER_EXIT,null);
+          GetAdReward(config.GameOverReward.Type,config.GameOverReward.Num);
+        },
+                  ()=>{
+             //還是要給skip ad獎勵
+            ItmeType skiptype = config.GameOverReward.SkipType;
+            string rewardtype = skiptype.ToString();
+            int rewardnum = config.GameOverReward.SkipNum;
+              UIDialog._UIDialog.show(new TipDialog("Failed get AD video,\nYou gain " + skiptype + "x" + rewardnum + "instead",
+                () => {
+                    GetAdReward(skiptype,rewardnum);
+                    currentstate = State.IDLE;
+                    return;
+                }));
+          }
+        );
+
+        currentstate = State.PLAY_ADS;
         return;
       }
       }));
@@ -264,16 +430,48 @@ public class MazeScene : MonoBehaviour,IScene
       currentstate = State.WAITPLAYER;
     }
     else if (currentstate == State.COMPLETED){
+
+      stepPlayMazeTimes();
+      steplevel();
       //...do somthing
-      UIDialog._UIDialog.show(new UseItemDialog("Go Next Maze?",null, new InteractiveDiaLogHandler[] {
+      UIDialog._UIDialog.show(new FinishDialog( FinishDialog.Type.Completed,currentlevel, new InteractiveDiaLogHandler[] {
       ()=>{
         //取消的話就是返回大廳
-        pDisposeHandler(SceneDisposeReason.USER_EXIT,null);
+        pDisposeHandler( SceneDisposeReason.USER_EXIT,null);
+        GetAdReward(config.CompletedReward.SkipType,config.CompletedReward.SkipNum);
+        AdsHelper._AdsHelper.DismissBannerAds();
         return;
       },
       ()=>{
-         //..更換迷宮? 原場景重製? 或是啥的不知道
-        CREAT_MAZE();
+        //..更換迷宮? 原場景重製? 或是啥的不知道
+        //CREAT_MAZE();
+
+        AdsHelper._AdsHelper.ShowRewardAd(()=>{
+          AdsHelper._AdsHelper.DismissBannerAds();
+          pDisposeHandler( SceneDisposeReason.USER_EXIT,null);
+          return;
+        },()=>{
+          AdsHelper._AdsHelper.DismissBannerAds();
+          pDisposeHandler( SceneDisposeReason.USER_EXIT,null);
+          GetAdReward(config.CompletedReward.Type,config.CompletedReward.Num);
+        },
+                  ()=>{
+             //還是要給skip ad獎勵
+            ItmeType skiptype = config.CompletedReward.SkipType;
+            string rewardtype = skiptype.ToString();
+            int rewardnum = config.CompletedReward.SkipNum;
+              UIDialog._UIDialog.show(new TipDialog("Failed get AD video,\nYou gain " + skiptype + "x" + rewardnum + "instead",
+                () => {
+                    GetAdReward(skiptype,rewardnum);
+                    currentstate = State.IDLE;
+                    return;
+                }));
+          }
+
+        );
+
+        //進廣告
+        currentstate = State.PLAY_ADS;
         return;
       }
       }));
@@ -293,17 +491,21 @@ public class MazeScene : MonoBehaviour,IScene
     if (timer == null)
       return;
 
+    if(time <= 10.00f && !fsx_played){
+      AudioController._AudioController.playOverlapEffect("到數讀秒10-1");
+      fsx_played = true;
+    }
+
     TimeSpan span = TimeSpan.FromSeconds((double)(new decimal(time)));
     DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
     DateTime date = epoch + span;
 
-    timer.text = "TIME\n" + date.ToString("mm:ss.ff");
+    timer.text = "TIME " + date.ToString("mm:ss.ff");
   }
 
   void PlayerControll(){
-
     //..根據不同平台在這切換輸入原
-
+    
     if (Input.GetKeyUp(KeyCode.UpArrow))
     {
       MazeManager._MazeManager.movePlayer(Dir.Top);
@@ -322,8 +524,23 @@ public class MazeScene : MonoBehaviour,IScene
     }
 
   }
+  void PlayerControll(Dir move_dir)
+  {
+    MazeManager._MazeManager.movePlayer(move_dir);
+  }
+
 
   void UpdateButton(){
+    if (mGameType == GameType.LIGHT){
+      torchbt.setEnabled(false);
+      oillampbt.setEnabled(false);
+      mRoot.transform.Find("DownUI/bg/oillampbt/Prohibit").gameObject.SetActive(true);
+      mRoot.transform.Find("DownUI/bg/Torchbt/Prohibit").gameObject.SetActive(true);
+      mRoot.transform.Find("DownUI/bg/Torchbt/Prohibit").gameObject.SetActive(!isadwatched);
+      return;
+    }
+
+
     bool playermoving = MazeManager._MazeManager.IsPlayerMoving();
 
     //bool canusestaff = !staff_used && !playermoving;
@@ -332,10 +549,16 @@ public class MazeScene : MonoBehaviour,IScene
     //bool canuseoil = !playermoving && oillampbt.GetComponent<Timer>() == null;
     //oillampbt.setEnabled(canuseoil && canusestaff);
 
-    torchbt.setEnabled(!playermoving);
-    bool canuseoil = !playermoving && oillampbt.GetComponent<Timer>() == null;
-    oillampbt.setEnabled(canuseoil);
+    bool torchnum = PlayerPrefsManager._PlayerPrefsManager.TorchNum > 0;
+    bool oilnum = PlayerPrefsManager._PlayerPrefsManager.OilLampNum > 0;
 
+    torchbt.setEnabled(!playermoving && torchnum);
+    bool canuseoil = !playermoving && oillampbt.GetComponent<Timer>() == null;
+    oillampbt.setEnabled(canuseoil && oilnum);
+
+    mRoot.transform.Find("DownUI/bg/oillampbt/Prohibit").gameObject.SetActive(!oilnum);
+    mRoot.transform.Find("DownUI/bg/Torchbt/Prohibit").gameObject.SetActive(!torchnum);
+    mRoot.transform.Find("DownUI/bg/Torchbt/Prohibit").gameObject.SetActive(!isadwatched);
   }
 
   //void updateItemTimer(){
@@ -356,13 +579,44 @@ public class MazeScene : MonoBehaviour,IScene
   public void ArrivalCell(string who, Cell c){
 
     if(c.Type == CellType.Box){
-      UIDialog._UIDialog.show(new ADSDialog(AssetbundleLoader._AssetbundleLoader.InstantiateSprite("common", "toch"), new InteractiveDiaLogHandler[] {
+      AudioController._AudioController.playOverlapEffect("寶箱介面出現提示音");
+      UIDialog._UIDialog.show(new ADSDialog( AssetbundleLoader._AssetbundleLoader.InstantiateSprite("common", "toch"), config.boxADReward.Num, new InteractiveDiaLogHandler[] {
       ()=>{
         //..看廣告之類的啥的
-        currentstate = State.IDLE;
+        AdsHelper._AdsHelper.ShowRewardAd(
+          ()=>
+        {
+          //加載失敗或是玩家強制跳過廣告，一律不給獎勵
+          currentstate = State.IDLE;
+          return;
+        },
+          ()=>{
+          //玩家確實有看完廣告，給予獎勵
+          GetAdReward(config.boxADReward.Type,config.boxADReward.Num);
+          currentstate = State.IDLE;
+          return;
+        },
+          ()=>{
+             //還是要給skip ad獎勵
+            ItmeType skiptype = config.boxADReward.SkipType;
+            string rewardtype = skiptype.ToString();
+            int rewardnum = config.boxADReward.SkipNum;
+              UIDialog._UIDialog.show(new TipDialog("Failed get AD video,\nYou gain " + skiptype + "x" + rewardnum + "instead", 
+                () => {
+                    GetAdReward(skiptype,rewardnum);
+                    currentstate = State.IDLE;
+                    return;
+                }));
+          }
+          );
+
+        currentstate = State.PLAY_ADS;
         return;
       },
       ()=>{
+        //選擇不看廣告
+        //
+                  GetAdReward(config.boxADReward.Type,config.boxADReward.SkipNum);
         currentstate = State.IDLE;
         return;
       }
@@ -382,5 +636,32 @@ public class MazeScene : MonoBehaviour,IScene
     
     float topuiHight = mRoot.transform.Find("TopUI/bg").GetComponent<SpriteRenderer>().sprite.bounds.size.y;
     return MainLogic._MainLogic.getCameraHight() * 0.5f - topuiHight;
+  }
+
+  void stepPlayMazeTimes(){
+    int playertimes = PlayerPrefsManager._PlayerPrefsManager.PlayMazeTimes;
+    playertimes++;
+    PlayerPrefsManager._PlayerPrefsManager.PlayMazeTimes = playertimes;
+    Debug.Log("685 - Current PlayerMazeTimes : " + playertimes);
+  }
+
+  void GetAdReward(ItmeType type, int num)
+  {
+    PlayerPrefsManager._PlayerPrefsManager.GetRewrd(type, num);
+    updateUI();
+  }
+
+  void updateUI(){
+    //更新道具數量
+    mRoot.transform.Find("DownUI/bg/Torchbt/amount").GetComponent<TextMeshPro>().text = "X" + PlayerPrefsManager._PlayerPrefsManager.TorchNum;
+    mRoot.transform.Find("DownUI/bg/oillampbt/amount").GetComponent<TextMeshPro>().text = "X" + PlayerPrefsManager._PlayerPrefsManager.OilLampNum;
+  }
+
+  void steplevel(){
+    if(mGameType == GameType.NIGHT)
+      PlayerPrefsManager._PlayerPrefsManager.DarkMazeLevel++;
+    else
+      PlayerPrefsManager._PlayerPrefsManager.LightMazeLevel++;
+
   }
 }

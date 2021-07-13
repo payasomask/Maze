@@ -75,6 +75,8 @@ public class MazePlayerController : MonoBehaviour
     if (mcurrentState == MoveState.Moving)
       return;
 
+    AudioController._AudioController.playOverlapEffect("腳色移動時_玩家滑動螢幕時撥放");
+
     //movepath是不包含現在站著的Cell
     movepath = MazeManager._MazeManager.GetMaze().movePath(currentx, currenty,dir);
 

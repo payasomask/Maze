@@ -1,13 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class LobbyScene : MonoBehaviour,IScene
 {
   string secneName;
   SceneDisposeHandler pDisposeHandler = null;
-  bool mInited = false;
-
+  private bool mInited = false;
+  GameObject Root;
   enum State
   {
     NULL = 0,
@@ -47,12 +48,18 @@ public class LobbyScene : MonoBehaviour,IScene
     //
     // Intro prefab
     //
-    GameObject cc = GameObject.Find("Lobby");
-    if (cc == null){
-      cc = instantiateObject(dynamicObj, "Lobby");
+    Root = GameObject.Find("Lobby");
+    if (Root == null){
+      Root = instantiateObject(dynamicObj, "Lobby");
     }
 
     mInited = true;
+
+    AudioController._AudioController.play("bgm");
+    updateUI();
+
+    AdsHelper._AdsHelper.RequestRectangleBannerAds(null);
+    //AdsHelper._AdsHelper.RequestInterstitialAds();
     return;
   }
 
@@ -74,9 +81,19 @@ public class LobbyScene : MonoBehaviour,IScene
   public void setUIEvent(string name, UIEventType type, object[] extra_info)
   {
     if(type == UIEventType.BUTTON){
-      if(name == "Play_bt"){
-        Debug.Log("Play_bt");
-        pDisposeHandler(SceneDisposeReason.USER_ACTION, new object[] { 0 });
+      if(name == "PlayDark_bt")
+      {
+        AudioController._AudioController.playOverlapEffect("大廳點擊Class Icon音效");
+        //Debug.Log("Play_bt");
+        pDisposeHandler(SceneDisposeReason.USER_ACTION, new object[] { 0,GameType.NIGHT });
+        AdsHelper._AdsHelper.DismissRectangleBannerAds();
+      }
+      else if (name == "Play_bt")
+      {
+        AudioController._AudioController.playOverlapEffect("大廳點擊Class Icon音效");
+        //Debug.Log("Play_bt");
+        pDisposeHandler(SceneDisposeReason.USER_ACTION, new object[] { 0, GameType.LIGHT });
+        AdsHelper._AdsHelper.DismissRectangleBannerAds();
       }
     }
   }
@@ -87,5 +104,15 @@ public class LobbyScene : MonoBehaviour,IScene
     g.transform.SetParent(parent.transform, true);
 
     return g;
+  }
+
+  void updateUI(){
+    Root.transform.Find("PlayDark_bt/level").GetComponent<TextMeshPro>().text = PlayerPrefsManager._PlayerPrefsManager.DarkMazeLevel.ToString();
+    Root.transform.Find("PlayDark_bt/torch/amount").GetComponent<TextMeshPro>().text = "X" +  PlayerPrefsManager._PlayerPrefsManager.TorchNum.ToString();
+    Root.transform.Find("PlayDark_bt/oillamp/amount").GetComponent<TextMeshPro>().text = "X" + PlayerPrefsManager._PlayerPrefsManager.OilLampNum.ToString();
+
+    Root.transform.Find("Play_bt/level").GetComponent<TextMeshPro>().text = PlayerPrefsManager._PlayerPrefsManager.LightMazeLevel.ToString();
+    Root.transform.Find("Play_bt/torch/amount").gameObject.SetActive(false);
+    Root.transform.Find("Play_bt/oillamp/amount").gameObject.SetActive(false);
   }
 }
