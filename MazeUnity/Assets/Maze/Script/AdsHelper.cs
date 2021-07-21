@@ -45,6 +45,23 @@ public class AdsHelper : MonoBehaviour
     {
       Debug.Log("MobileAds init completed");
 
+      Dictionary<string, AdapterStatus> map = initStatus.getAdapterStatusMap();
+      foreach (KeyValuePair<string, AdapterStatus> keyValuePair in map)
+      {
+        string className = keyValuePair.Key;
+        AdapterStatus status = keyValuePair.Value;
+        switch (status.InitializationState)
+        {
+          case AdapterState.NotReady:
+            // The adapter initialization did not complete.
+            Debug.Log("Adapter: " + className + " not ready.");
+            break;
+          case AdapterState.Ready:
+            // The adapter was successfully initialized.
+            Debug.Log("Adapter: " + className + " is initialized.");
+            break;
+        }
+      }
 
       //Adscale = MobileAds.Utils.GetDeviceScale();
       //Debug.Log("645 - GetDeviceScale" + Adscale);
@@ -80,9 +97,9 @@ public class AdsHelper : MonoBehaviour
       return;
 
 #if UNITY_ANDROID
-    string adUnitId = "ca-app-pub-3940256099942544/6300978111";
+    string adUnitId = "ca-app-pub-4959011404007459/2245648839";
 #elif UNITY_IPHONE
-            string adUnitId = "ca-app-pub-3940256099942544/2934735716";
+            string adUnitId = "ca-app-pub-4959011404007459/2245648839";
 #else
             string adUnitId = "unexpected_platform";
 #endif
@@ -149,9 +166,9 @@ public class AdsHelper : MonoBehaviour
       return;
 
 #if UNITY_ANDROID
-    string adUnitId = "ca-app-pub-3940256099942544/6300978111";
+    string adUnitId = "ca-app-pub-4959011404007459/5909222360";
 #elif UNITY_IPHONE
-            string adUnitId = "ca-app-pub-3940256099942544/2934735716";
+            string adUnitId = "ca-app-pub-4959011404007459/5909222360";
 #else
             string adUnitId = "unexpected_platform";
 #endif
@@ -161,7 +178,7 @@ public class AdsHelper : MonoBehaviour
 #if !UNITY_EDITOR && UNITY_ANDROID
     this.bannerView = new BannerView(adUnitId, size, AdPosition.Bottom);
 #elif UNITY_EDITOR && UNITY_ANDROID
-    this.RectanglebannerView = new BannerView(adUnitId, AdSize.SmartBanner, AdPosition.Bottom);
+    this.bannerView = new BannerView(adUnitId, AdSize.SmartBanner, AdPosition.Bottom);
 #endif
     // Create a 320x50 banner at the top of the screen.
     //this.bannerView = new BannerView(adUnitId, size, AdPosition.Bottom);
@@ -271,9 +288,9 @@ public class AdsHelper : MonoBehaviour
 
 
 #if UNITY_ANDROID
-    string adUnitId = "ca-app-pub-3940256099942544/5224354917";
+    string adUnitId = "ca-app-pub-4959011404007459/8513288688";
 #elif UNITY_IPHONE
-        string adUnitId = "ca-app-pub-3940256099942544/5224354917";
+        string adUnitId = "ca-app-pub-4959011404007459/8513288688";
 #else
         string adUnitId = "unexpected_platform";
 #endif
@@ -395,6 +412,7 @@ public class AdsHelper : MonoBehaviour
       }
       AudioController._AudioController.toggleMusic(true);
     }
+
     Debug.Log("AdClosed Get call back from native");
   }
 

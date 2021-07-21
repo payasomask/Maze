@@ -100,6 +100,9 @@ public class MazeScene : MonoBehaviour,IScene
     mRoot.transform.Find("TopUI/bg/level").GetComponent<TextMeshPro>().text = "Class-" + currentlevel;
     //itemtimer = cc.transform.Find("DownUI/itemtimer").GetComponent<TextMeshPro>();
 
+    string spritename = config.DownUIReward.Type == ItmeType.OilLamp ? "lamp" : "toch";
+    mRoot.transform.Find("DownUI/bg/adsTorch/icon").GetComponent<SpriteRenderer>().sprite = AssetbundleLoader._AssetbundleLoader.InstantiateSprite("common", spritename);
+
     MaskManager._MaskManager.Init();
     MazeManager._MazeManager.Init(this,config);
     updateUI();
@@ -311,13 +314,13 @@ public class MazeScene : MonoBehaviour,IScene
 
   void Update(){
 
-    if (Input.GetKeyUp(KeyCode.R))
-    {
-      //CREAT_MAZE();
-      pDisposeHandler(SceneDisposeReason.USER_EXIT, null);
-      currentstate = State.WAITPLAYER;
-      return;
-    }
+    //if (Input.GetKeyUp(KeyCode.R))
+    //{
+    //  //CREAT_MAZE();
+    //  pDisposeHandler(SceneDisposeReason.USER_EXIT, null);
+    //  currentstate = State.WAITPLAYER;
+    //  return;
+    //}
 
     if (currentstate == State.STOP){
       return;
@@ -415,8 +418,9 @@ public class MazeScene : MonoBehaviour,IScene
             int rewardnum = config.GameOverReward.SkipNum;
               UIDialog._UIDialog.show(new TipDialog("Failed get AD video,\nYou gain " + skiptype + "x" + rewardnum + "instead",
                 () => {
+                                              pDisposeHandler( SceneDisposeReason.USER_EXIT,null);
+                            AdsHelper._AdsHelper.DismissBannerAds();
                     GetAdReward(skiptype,rewardnum);
-                    currentstate = State.IDLE;
                     return;
                 }));
           }
@@ -462,8 +466,9 @@ public class MazeScene : MonoBehaviour,IScene
             int rewardnum = config.CompletedReward.SkipNum;
               UIDialog._UIDialog.show(new TipDialog("Failed get AD video,\nYou gain " + skiptype + "x" + rewardnum + "instead",
                 () => {
+                            pDisposeHandler( SceneDisposeReason.USER_EXIT,null);
+                            AdsHelper._AdsHelper.DismissBannerAds();
                     GetAdReward(skiptype,rewardnum);
-                    currentstate = State.IDLE;
                     return;
                 }));
           }
@@ -536,7 +541,8 @@ public class MazeScene : MonoBehaviour,IScene
       oillampbt.setEnabled(false);
       mRoot.transform.Find("DownUI/bg/oillampbt/Prohibit").gameObject.SetActive(true);
       mRoot.transform.Find("DownUI/bg/Torchbt/Prohibit").gameObject.SetActive(true);
-      mRoot.transform.Find("DownUI/bg/Torchbt/Prohibit").gameObject.SetActive(!isadwatched);
+      //看過後關閉
+      mRoot.transform.Find("DownUI/bg/adsTorch").gameObject.SetActive(!isadwatched);
       return;
     }
 
@@ -558,7 +564,7 @@ public class MazeScene : MonoBehaviour,IScene
 
     mRoot.transform.Find("DownUI/bg/oillampbt/Prohibit").gameObject.SetActive(!oilnum);
     mRoot.transform.Find("DownUI/bg/Torchbt/Prohibit").gameObject.SetActive(!torchnum);
-    mRoot.transform.Find("DownUI/bg/Torchbt/Prohibit").gameObject.SetActive(!isadwatched);
+    mRoot.transform.Find("DownUI/bg/adsTorch").gameObject.SetActive(!isadwatched);
   }
 
   //void updateItemTimer(){
@@ -580,7 +586,7 @@ public class MazeScene : MonoBehaviour,IScene
 
     if(c.Type == CellType.Box){
       AudioController._AudioController.playOverlapEffect("寶箱介面出現提示音");
-      UIDialog._UIDialog.show(new ADSDialog( AssetbundleLoader._AssetbundleLoader.InstantiateSprite("common", "toch"), config.boxADReward.Num, new InteractiveDiaLogHandler[] {
+      UIDialog._UIDialog.show(new ADSDialog( config.boxADReward, new InteractiveDiaLogHandler[] {
       ()=>{
         //..看廣告之類的啥的
         AdsHelper._AdsHelper.ShowRewardAd(
@@ -616,7 +622,7 @@ public class MazeScene : MonoBehaviour,IScene
       ()=>{
         //選擇不看廣告
         //
-                  GetAdReward(config.boxADReward.Type,config.boxADReward.SkipNum);
+        GetAdReward(config.boxADReward.SkipType,config.boxADReward.SkipNum);
         currentstate = State.IDLE;
         return;
       }
@@ -624,6 +630,11 @@ public class MazeScene : MonoBehaviour,IScene
       currentstate = State.WAITPLAYER;
       return;
     }else if(c.Type == CellType.Goal){
+
+      if(currentstate == State.GAME_OVER){
+        return;
+      }
+
       currentstate = State.COMPLETED;
       return;
     }

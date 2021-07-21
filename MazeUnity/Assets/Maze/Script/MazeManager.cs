@@ -80,8 +80,8 @@ public class MazeManager : MonoBehaviour
     goalcontroller.init((int)GoalStartLoaction.x, (int)GoalStartLoaction.y, maze_cellsize);
 
     //隨機寶箱
-    if (UtilityHelper.Random(0, 10) >= 0){
-    //if (UtilityHelper.Random(0, 10) < 3){
+    //if (UtilityHelper.Random(0, 10) >= 0){
+    if (UtilityHelper.Random(0, 10) < 3){
 
       //寶相的位置先暫定是角落好了，最不會有問題
       //起點跟終點都在角落所以我直接隨機一個小一圈的範圍就好了

@@ -55,7 +55,7 @@ public class LobbyScene : MonoBehaviour,IScene
 
     mInited = true;
 
-    AudioController._AudioController.play("bgm");
+    AudioController._AudioController.play("bgm",true);
     updateUI();
 
     AdsHelper._AdsHelper.RequestRectangleBannerAds(null);

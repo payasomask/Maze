@@ -9,15 +9,11 @@ public class JsonLoader : MonoBehaviour
   float[] time_map_arr = new float[] {
 30,
 30,
-30,
+40,
+40,
+50,
 60,
-60,
-60,
-90,
-90,
-90,
-120,
-120
+70
   };
 
   public static JsonLoader _JsonLoader = null;
@@ -35,31 +31,33 @@ public class JsonLoader : MonoBehaviour
     int row_init = 8;//初始row數量
     int row_interval = 4;//每一個區間row的成長係數
     int column_interval =3;//每一個區間columns的成長係數
-    int level_interval = 0;//關卡區間數量
+    int level_interval_count = 0;//關卡區間數量
 
-    int first_level_interval_max_level = 10;
+    int first_level_interval_max_level = 10;//第一個區間的最大關卡
+    int level_interval = 10;//關卡每個區間數量
+    int max_level = 70;//最大關卡區間的最大關卡
 
     //level init
-    for(int i = first_level_interval_max_level; i < 120; i += 10){
+    for (int i = first_level_interval_max_level; i <= max_level; i += level_interval){
       MazeConfig tmp = new MazeConfig();
       tmp.maxlevel = i;
-      tmp.Rows = row_init + row_interval * level_interval;
-      tmp.Columns = column_init + column_interval * level_interval;
+      tmp.Rows = row_init + row_interval * level_interval_count;
+      tmp.Columns = column_init + column_interval * level_interval_count;
       float level_time;
       try
       {
-        level_time = time_map_arr[level_interval];
+        level_time = time_map_arr[level_interval_count];
       }
       catch(ArgumentOutOfRangeException e)
       {
         level_time = time_map_arr[time_map_arr.Length-1];
       }
       tmp.LimitTime = level_time;
-      tmp.boxADReward = new ADReward(ItmeType.Torch, 2, ItmeType.Torch,1);
-      tmp.CompletedReward = new ADReward(ItmeType.OilLamp, 2, ItmeType.OilLamp,1);
-      tmp.GameOverReward = new ADReward(ItmeType.OilLamp, 2, ItmeType.Torch, 1);
-      tmp.DownUIReward = new ADReward(ItmeType.Torch, 1, ItmeType.Torch,0);
-      level_interval++;
+      tmp.boxADReward = new ADReward(ItmeType.OilLamp, 1, ItmeType.Torch,1);
+      tmp.CompletedReward = new ADReward(ItmeType.OilLamp, 1, ItmeType.Torch,1);
+      tmp.GameOverReward = new ADReward(ItmeType.OilLamp, 1, ItmeType.Torch, 1);
+      tmp.DownUIReward = new ADReward(ItmeType.OilLamp, 1, ItmeType.Torch,0);
+      level_interval_count++;
       mazeConfig_dic.Add(i, tmp);
     }
 

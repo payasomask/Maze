@@ -44,7 +44,7 @@ SpriteAtlas:
     variantMultiplier: 1
     packables:
     - {fileID: 102900000, guid: 40ef02399cd6a6b429b0ee302da2f08d, type: 3}
-    totalSpriteSurfaceArea: 2876231
+    totalSpriteSurfaceArea: 2868131
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
@@ -60,7 +60,6 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 7464be8423d74b6408fc6a5ae54e945c, type: 3}
   - {fileID: 21300000, guid: 64bea806cc3daf9439e30c0545d96874, type: 3}
   - {fileID: 21300000, guid: 487b3e67e4a6df7488756178563d7488, type: 3}
-  - {fileID: 21300000, guid: 2e9788b7308211647a6130a4bb7143f4, type: 3}
   - {fileID: 21300000, guid: 47d772b83ce7e3b419a97fc10caf0dbf, type: 3}
   - {fileID: 21300000, guid: 8b969cd87a9751b418b10ceefd7c9b04, type: 3}
   - {fileID: 21300000, guid: 7d1d79e8ed6700048baf9773c8a0bc70, type: 3}
@@ -86,7 +85,6 @@ SpriteAtlas:
   - lamp
   - button_banner
   - intro
-  - brick
   - light_maze
   - message_board
   - top_bar
