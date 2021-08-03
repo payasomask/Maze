@@ -12,6 +12,8 @@ public class Timer : MonoBehaviour {
     public string session_id =null;
     public CommonAction count_down_handler =null;
     public float count_down_duration =-1f;
+    public int runtime = 0;
+    public float duration = 0;
   }
   Dictionary<string, Session> session_map =new Dictionary<string, Session>();
   
@@ -25,6 +27,32 @@ public class Timer : MonoBehaviour {
       s.count_down_duration =duration;
       s.count_down_handler =handler;
       session_map.Add(s.session_id, s);
+    }
+
+    return session_id;
+  }
+
+
+  //runtime執行幾次，duration每次間格時間，initrun啟動當下就先執行一次
+  public string start(int runtime, float duration, CommonAction handler, bool initrun = true){
+    string session_id = System.Guid.NewGuid().ToString();
+    if (handler != null){
+      Debug.Log("10 - start count down (runtime : "+ runtime + ", duration:" + duration + ", session:" + session_id + ")");
+
+      Session s = new Session();
+      s.session_id = session_id;
+      s.count_down_duration = duration;
+      s.count_down_handler = handler;
+      s.runtime = runtime;
+      s.duration = duration;
+      if (initrun){
+        if (s.count_down_handler != null){
+          s.count_down_handler();
+          s.runtime--;
+        }
+      }
+      session_map.Add(s.session_id, s);
+
     }
 
     return session_id;
@@ -75,16 +103,23 @@ public class Timer : MonoBehaviour {
           entity.Value.count_down_duration = 0.0f;
           Debug.Log("27 - count down times up ! (session:"+entity.Value.session_id+")");
           if (entity.Value.count_down_handler !=null){
+            entity.Value.runtime--;
             try{
               entity.Value.count_down_handler();
             }catch(System.Exception e){
               Debug.LogError(e.ToString());
             }
 
-            entity.Value.count_down_handler =null;
 
-            session_map.Remove(entity.Key);
-            break;
+            if(entity.Value.runtime <= 0){
+              entity.Value.count_down_handler =null;
+              session_map.Remove(entity.Key);
+              break;
+            }
+            else{
+              entity.Value.count_down_duration = entity.Value.duration;
+              continue;
+            }
           }
         }
       }

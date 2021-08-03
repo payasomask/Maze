@@ -672,7 +672,7 @@ public class MainLogic : MonoBehaviour
     {
       mCurrentSceneTransition = null;
     });
-    //mCurrentSceneTransition = new SceneTransition("MazeScene", new object[] { }, delegate ()
+    //mCurrentSceneTransition = new SceneTransition("MazeScene", new object[] { GameType.LIGHT }, delegate ()
     //{
     //  mCurrentSceneTransition = null;
     //});

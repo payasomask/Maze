@@ -348,7 +348,7 @@ public class MazeScene : MonoBehaviour,IScene
       MazeManager._MazeManager.ClearMaze();
       MazeManager._MazeManager.CreatMaze(config.Rows, config.Columns);
       gametime = config.LimitTime;
-
+      //gametime = 10.0f;
       //重製倒數的音效
       fsx_played = false;
 
@@ -497,7 +497,14 @@ public class MazeScene : MonoBehaviour,IScene
       return;
 
     if(time <= 10.00f && !fsx_played){
-      AudioController._AudioController.playOverlapEffect("到數讀秒10-1");
+      Timer t = gameObject.GetComponent<Timer>();
+      if (t == null){
+        t = gameObject.AddComponent<Timer>();
+      }
+      t.start(10, 1.0f, () =>{
+        AudioController._AudioController.playOverlapEffect("到數讀秒1秒");
+      });
+
       fsx_played = true;
     }
 
